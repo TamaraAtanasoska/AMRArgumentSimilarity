@@ -1,0 +1,4 @@
+name: ArgSim
+channels:
+  - defaults
+prefix: /Users/tamara/opt/miniconda3/envs/ArgSim
