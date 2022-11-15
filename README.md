@@ -2,7 +2,9 @@
 
 This project reproduces the paper "Explainable Unsupervised Argument Similarity Rating with Abstract Meaning Representation and Conclusion Generation"(Opitz et al., ArgMining 2021) [(link)](project_docs/OpitzEtAl21.pdf). 
 
-It will also include an extension. Currently a work in progress.
+To reproduce the results of the study, two repositories originally written by the author are required: [a more general repository](https://github.com/flipz357/amr-metric-suite) that contains AMR metrics and the [paper specific repository](https://github.com/Heidelberg-NLP/amr-argument-sim) that contains the AMR metric for argument similarity. As we focus on the results obtained in the paper, we provide both repositories cloned in [```repro_repos/```](repro_repos/).
+
+It will also include an extension. Currently a work in progress as we gather ideas.
 
 This project is a so called "Project Module", part of the [Cogniive Systems](https://www.uni-potsdam.de/en/studium/what-to-study/master/masters-courses-from-a-to-z/cognitive-systems) Master program at the [University of Potsdam](https://www.uni-potsdam.de/en/university-of-potsdam). Contributors: [Tamara Atanasoska](https://github.com/TamaraAtanasoska), [Emanuele De Rossi](https://github.com/EmanueleDeRossi1) and [Galina Ryazanskaya](https://github.com/flying-bear).
 
