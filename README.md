@@ -41,7 +41,7 @@ python smatch/s2match.py -f <file1> <file2> -cutoff 0.95 --ms > s2match_scores_s
 ```
 ### Evaluating with the AMR metric
 
-In the ```[sim_preds/](repro_repos/amr-argument-sim/scripts/sim_preds)``` folder there are various predictions stored. To test-evaluate all of them with the AMR metric, you can run the command below. You will see the ouput as the command runs.  
+In the [```sim_preds/```](repro_repos/amr-argument-sim/scripts/sim_preds) folder there are various predictions stored. To test-evaluate all of them with the AMR metric, you can run the command below. You will see the ouput as the command runs.  
 ```
 cd repro_repos/amr-argument-sim/scripts/
 ./evaluate_all.sh
