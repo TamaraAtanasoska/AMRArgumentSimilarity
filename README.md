@@ -62,14 +62,17 @@ We picked to use the [oldest T5 based parse model](https://github.com/bjascob/am
 
 Once you have picked the model, you need to download it, extract it and rename it. More information [here](https://amrlib.readthedocs.io/en/latest/install/#install-the-models). On Windows it would be easier to just download the zip file, extract and rename the folder instead of the last linking command. 
 ```
-pip show amrlib #it will show information about the package. you need to remember where it is stored. 
+pip show amrlib #copy path where the package is stored 
 cd <path-to-where-the-package-is-stored>
 
 mkdir data
 cd data
-tar xzf model_parse_t5-v0_1_0.tar.gz #you will need to move the file here before running this command
-ln -snf model_parse_t5-v0_1_0.tar.gz    model_stog
+tar xzf <model-filename> #copy file here before running command
+ln -snf <model-filenam>  model_stog
 ```
 
-
-
+To test if the parser is working and the installation is correct, you can run: 
+```
+cd scripts
+python ./test_parse.py 
+```
