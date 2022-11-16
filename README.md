@@ -2,7 +2,7 @@
 
 This project reproduces the paper "Explainable Unsupervised Argument Similarity Rating with Abstract Meaning Representation and Conclusion Generation"(Opitz et al., ArgMining 2021) [(link)](project_docs/OpitzEtAl21.pdf). 
 
-To reproduce the results of the study, two repositories originally written by the author are required: [a more general repository](https://github.com/flipz357/amr-metric-suite) that contains AMR metrics and the [paper specific repository](https://github.com/Heidelberg-NLP/amr-argument-sim) that contains the AMR metric for argument similarity. As we focus on the results obtained in the paper, we provide both repositories cloned in [```repro_repos/```](repro_repos/).
+To reproduce the results of the study, two repositories originally written by the author are required: [a more general repository](https://github.com/flipz357/amr-metric-suite) that contains AMR metrics and the [paper specific repository](https://github.com/Heidelberg-NLP/amr-argument-sim) that contains the AMR metric for argument similarity. As we focus on the results obtained in the paper, we provide both repositories cloned in [```repro_repos/```](repro_repos/). Additionally, we use the [AMR parser](https://github.com/bjascob/amrlib) as used in the paper as library to turn sentences into graphs.
 
 It will also include an extension. Currently a work in progress as we gather ideas.
 
@@ -47,3 +47,14 @@ cd repro_repos/amr-argument-sim/scripts/
 ./evaluate_all.sh
 ```
 What the script does, is use all the files that are in the similarity predictions folder to evaluate. If you would like to use a file of your own, you can use the [```evaluate.py```](repro_repos/amr-argument-sim/scripts/evaluate.py) script. 
+
+## Using the AMR parser
+
+If you have set up your environment with [our section](#environment-recreation) about it above, you will already have all the packages installed. If you haven't and you would like to install only the relevant ones for this parser, please take a look at the parser's [installation guide](https://amrlib.readthedocs.io/en/latest/install/). If you only need the parser, it is a better idea to clone the code from the [original repository](https://github.com/bjascob/amrlib) too. 
+
+After installing all the required packages by any of the means, run: 
+```
+pip install amrlib
+```
+This will install the library. However, in order to parse, you will also need to pick and download a model to do that with. All the models currently available are found in [this repository](https://github.com/bjascob/amrlib-models). 
+
