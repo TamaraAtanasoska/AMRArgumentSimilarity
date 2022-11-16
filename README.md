@@ -60,10 +60,14 @@ This will install the library. However, in order to parse, you will also need to
 
 We picked to use the [oldest T5 based parse model](https://github.com/bjascob/amrlib-models/releases/tag/model_parse_t5-v0_1_0) available, to be able to get as comparable results with the ones in the paper as possible. 
 
-Once you have picked the model, you need to download it and extract it in [```repro_repos/amrlib/amrlib/data/```](repro_repos/amrlib/amrlib/data) and rename it. More information [here](https://amrlib.readthedocs.io/en/latest/install/#install-the-models). On Windows it would be easier to just download the zip file, extract and rename the folder. 
+Once you have picked the model, you need to download it, extract it and rename it. More information [here](https://amrlib.readthedocs.io/en/latest/install/#install-the-models). On Windows it would be easier to just download the zip file, extract and rename the folder instead of the last linking command. 
 ```
-cd repro_repos/amrlib/amrlib/data
-tar xzf model_parse_t5-v0_1_0.tar.gz
+pip show amrlib #it will show information about the package. you need to remember where it is stored. 
+cd <path-to-where-the-package-is-stored>
+
+mkdir data
+cd data
+tar xzf model_parse_t5-v0_1_0.tar.gz #you will need to move the file here before running this command
 ln -snf model_parse_t5-v0_1_0.tar.gz    model_stog
 ```
 
