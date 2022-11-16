@@ -58,3 +58,14 @@ pip install amrlib
 ```
 This will install the library. However, in order to parse, you will also need to pick and download a model to do that with. All the models currently available are found in [this repository](https://github.com/bjascob/amrlib-models). 
 
+We picked to use the [oldest T5 based parse model](https://github.com/bjascob/amrlib-models/releases/tag/model_parse_t5-v0_1_0) available, to be able to get as comparable results with the ones in the paper as possible. 
+
+Once you have picked the model, you need to download it and extract it in [```repro_repos/amrlib/amrlib/data/```](repro_repos/amrlib/amrlib/data) and rename it. More information [here](https://amrlib.readthedocs.io/en/latest/install/#install-the-models). On Windows it would be easier to just download the zip file, extract and rename the folder. 
+```
+cd repro_repos/amrlib/amrlib/data
+tar xzf model_parse_t5-v0_1_0.tar.gz
+ln -snf model_parse_t5-v0_1_0.tar.gz    model_stog
+```
+
+
+
