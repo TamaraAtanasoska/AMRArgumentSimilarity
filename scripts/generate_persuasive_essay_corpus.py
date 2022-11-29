@@ -35,6 +35,7 @@ class Premise(AnnotationSpan):
 
 @attr.s(auto_attribs=True)
 class EssayAnnotation:
+    id: str = None
     major_claims: Dict[AnnID, MajorClaim] = attr.ib(factory=dict)
     claims: Dict[AnnID, Claim] = attr.ib(factory=dict)
     premises: Dict[AnnID, Premise] = attr.ib(factory=dict)
@@ -44,21 +45,21 @@ class EssayAnnotation:
         premises, claim = pair
         return f'summarize: {" ".join(premises)}', claim
 
-    def make_premise_claim_pairs(self) -> List[Tuple[List[str], str]]:
+    def make_premise_claim_pairs(self) -> List[Tuple[str, List[str], str]]:
         pairs = []
         for major_claim in self.major_claims.values():
             if major_claim.claims:
                 supporting_claim_texts = [self.claims[claim_id].text for claim_id in major_claim.claims]
-                pairs.append((supporting_claim_texts, major_claim.text))
+                pairs.append((self.id, supporting_claim_texts, major_claim.text))
         for claim in self.claims.values():
             if claim.premises:
                 premise_texts = [self.premises[premise_id].text for premise_id in claim.premises]
-                pairs.append((premise_texts, claim.text))
+                pairs.append((self.id, premise_texts, claim.text))
         for premise in self.premises.values():
             if premise.supporting_premises:
                 supporting_premises_texts = [self.premises[premise_id].text for
                                              premise_id in premise.supporting_premises]
-                pairs.append((supporting_premises_texts, premise.text))
+                pairs.append((self.id, supporting_premises_texts, premise.text))
         return pairs
 
 
@@ -111,8 +112,8 @@ def process_rel_line(line: str, essay: EssayAnnotation):
             essay.premises[claim_id].supporting_premises.append(premise_id)
 
 
-def parse_ann_file(text: str) -> EssayAnnotation:
-    essay = EssayAnnotation()
+def parse_ann_file(name, text: str) -> EssayAnnotation:
+    essay = EssayAnnotation(id=name)
     lines = text.split('\n')
     for line in lines:
         line = line.strip()
@@ -127,7 +128,7 @@ def parse_ann_file(text: str) -> EssayAnnotation:
                 raise ValueError(f'unexpected line parse at line {line}')
 
     for claim_id in essay.claims:  # add claims to support major claims
-        if essay.claims[claim_id].stance == 1:
+        if essay.claims[claim_id].stance == 1:  # only add supporting claims
             essay.claims[claim_id].major_claims = essay.major_claims.values()
             for major_claim_id in essay.major_claims:
                 essay.major_claims[major_claim_id].claims.append(claim_id)
@@ -147,14 +148,14 @@ def main():
             if name.endswith('.ann'):
                 with open(os.path.join(root, name)) as f:
                     text = f.read()
-                essay = parse_ann_file(text)
+                essay = parse_ann_file(name.strip('.ann'), text)
                 pairs += essay.make_premise_claim_pairs()
 
     with open(args.out_path, 'w') as f:
         writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(('Premises', 'Claim'))
+        writer.writerow(('Essay', 'Premises', 'Claim'))
         for pair in pairs:
-            writer.writerow((' ### '.join(pair[0]), pair[1]))
+            writer.writerow((pair[0], ' ### '.join(pair[1]), pair[2]))
 
 
 if __name__ == '__main__':
