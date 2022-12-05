@@ -22,7 +22,7 @@ class MajorClaim(AnnotationSpan):
 
 @attr.s(auto_attribs=True)
 class Claim(AnnotationSpan):
-    major_claims:  Optional[List[AnnID]] = attr.ib(factory=list)
+    major_claims: Optional[List[AnnID]] = attr.ib(factory=list)
     stance: Optional[int] = None
     premises: Optional[List[AnnID]] = attr.ib(factory=list)
 
