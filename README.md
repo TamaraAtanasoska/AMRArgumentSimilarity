@@ -23,21 +23,36 @@ In the folder ```setup/``` you can find the respective environment replication a
    conda activate <name>
    ```
    
+You might encounter an issue with the package ```mkl_fft``` if you are using conda. You could run the following to install it:
+```
+conda install -c intel mkl_fft
+```
+
 ## Generating the S2match scores and evaluating with the AMR metric
+
+### Downloading word vectors
+
+S2match needs word vectors to perform the calculation. There is a script included to download Glove word vectors. 
+
+```
+cd repro_repos/amr-metric-suite/
+./download_glove.sh
+```
 
 ### Generating S2match scores
 
 To get the results using the S2match metric, which is denoted as "standard" in the paper you can run: 
 ```
 cd repro_repos/amr-metric-suite/py3-Smatch-and-S2match
-python smatch/s2match.py -f <file1> <file2> -cutoff 0.95 --ms
+python smatch/s2match.py -f ../examples/a.txt ../examples/b.txt -cutoff 0.95 --ms
 ```
-The cutoff parameter's value of 0.95 corresponds to the value used in the paper. A high cutoff parameter allows the score to increase only for (near-) paraphrase concepts.
+
+This command uses the example files that are already in the folder, they can be replaced with any other file in the right format. The cutoff parameter's value of 0.95 corresponds to the value used in the paper. A high cutoff parameter allows the score to increase only for (near-) paraphrase concepts.
 
 You would need to save the output in a file to be able to use it to evaluate with the AMR metric below. You could either copy-paste the output or run the following complete command: 
 ```
 cd repro_repos/amr-metric-suite/py3-Smatch-and-S2match
-python smatch/s2match.py -f <file1> <file2> -cutoff 0.95 --ms > s2match_scores_standard.txt
+python smatch/s2match.py -f ../examples/a.txt ../examples/b.txt -cutoff 0.95 --ms > s2match_scores_standard.txt
 ```
 ### Evaluating with the AMR metric
 
@@ -63,12 +78,12 @@ We picked to use the [oldest T5-based parse model](https://github.com/bjascob/am
 Once you have picked the model, you need to download it, extract it and rename it. More information can be found [here](https://amrlib.readthedocs.io/en/latest/install/#install-the-models). On Windows, it would be easier to just download the zip file, unzip it and rename the folder instead of the last linking command. 
 ```
 pip show amrlib #copy path where the package is stored 
-cd <path-to-where-the-package-is-stored>
+cd <path-to-where-the-package-is-stored> #copy path from the output of the command above
 
 mkdir data
 cd data
 tar xzf <model-filename> #copy file here before running command
-ln -snf <model-filenam>  model_stog
+ln -snf <model-filename>  model_stog
 ```
 
 To test if the parser is working and the installation is correct, you can run: 
