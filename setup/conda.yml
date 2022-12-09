@@ -34,7 +34,6 @@ dependencies:
   - xz=5.2.6=hca72f7f_0
   - zlib=1.2.13=h4dc903c_0
   - pip:
-    - amrlib==0.7.1
     - blis==0.7.9
     - cached-property==1.5.2
     - catalogue==2.0.8
