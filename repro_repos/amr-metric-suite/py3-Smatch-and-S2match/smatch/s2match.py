@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 """
 This script computes smatch score between two AMRs.
 For detailed description of smatch, see http://www.isi.edu/natural-language/amr/smatch-13.pdf
 
 """
+import argparse
+
 try:
     import amr_py3 as amr
 except ModuleNotFoundError:
@@ -72,8 +74,9 @@ def get_amr_line(input_f):
             cur_amr.append(line.strip())
     return "".join(cur_amr)
 
+
 def load_vecs(fp):
-    dic={}
+    dic = {}
     if not fp:
         return dic
     with open(fp, "r") as f:
@@ -100,27 +103,27 @@ def build_arg_parser():
     parser.add_argument('-cutoff', required=False, type=float, default=0.5,
                         help='only sim > cutoff taken into account')
     parser.add_argument('-diffsense', required=False, type=float, default=0.5,
-                        help='coefficient of similarity when senses differ, e.g.'\
-                                'hit-01 vs hit-02 ---> coef*1.0 ;;;;; hit-01 vs jump-0x ---> coef*sim(hit,jump)')
+                        help='coefficient of similarity when senses differ, e.g.' \
+                             'hit-01 vs hit-02 ---> coef*1.0 ;;;;; hit-01 vs jump-0x ---> coef*sim(hit,jump)')
+    parser.add_argument('-weighting_scheme', required=False, type=str, default='standard')
     parser.add_argument('-r', type=int, default=4, help='Restart number (Default:4)')
     parser.add_argument('-v', action='store_true', help='Verbose output (Default:false)')
     parser.add_argument('--ms', action='store_true', default=False,
                         help='Output multiple scores (one AMR pair a score)' \
                              'instead of a single document-level smatch score (Default: false)')
-    parser.add_argument('-multi_token_concept_strategy', required = False, default="split", type=str,
-                    help='default: \"split\"     you can also use \"None\": only direct vector lookup')
+    parser.add_argument('-multi_token_concept_strategy', required=False, default="split", type=str,
+                        help='default: \"split\"     you can also use \"None\": only direct vector lookup')
     parser.add_argument('--pr', action='store_true', default=False,
                         help="Output precision and recall as well as the f-score. Default: false")
     parser.add_argument('--do_not_mark_quotes', action='store_true',
-                      help=":op1 \"David\" will be treated same as :op1 David")
+                        help=":op1 \"David\" will be treated same as :op1 David")
 
     return parser
 
 
-
 def cosine_sim(a, b):
     # cosine similarity, this is set as default.
-    
+
     # Although "real" cosine similarity would be in [-1, 1] we treat everything < 0 as 0, since
     # the Smatch alignment may be ill defined when concept similarity < 0.0. 
     # An extension for future work could be to conduct the alignment on the 
@@ -128,26 +131,30 @@ def cosine_sim(a, b):
     # Smatch could align "antonyms" (vectors pointing in opposite direction, cosim < 0) if needed but 
     # it would reduce the overall score, which could be desired when comparing AMRs of sentences 
     # that contain anotnyms.
-    
+
     dist = cosine(a, b)
     sim = 1 - min(1, dist)
     return sim
 
+
 def euclidean_sim(a, b):
-    #euclidean distance, projected to similarity [0,1]
+    # euclidean distance, projected to similarity [0,1]
     dist = euclidean(a, b)
-    sim = 1 / (math.e**dist)
+    sim = 1 / (math.e ** dist)
     return sim
 
+
 def cityblock_sim(a, b):
-    #manh distance, projected to similarity in [0, 1] 
+    # manh distance, projected to similarity in [0, 1]
     dist = cityblock(a, b)
-    sim = 1 / (math.e**dist)
+    sim = 1 / (math.e ** dist)
     return sim
+
 
 def get_best_match(instance1, attribute1, relation1,
                    instance2, attribute2, relation2,
-                   prefix1, prefix2, vectors, cutoff, diffsense, simfun, mwp):
+                   prefix1, prefix2, vectors, cutoff, diffsense, simfun, mwp,
+                   weighting_scheme='standard'):
     """
     Get the highest triple match number between two sets of triples via hill-climbing.
     Arguments:
@@ -167,22 +174,24 @@ def get_best_match(instance1, attribute1, relation1,
     # Compute candidate pool - all possible node match candidates.
     # In the hill-climbing, we only consider candidate in this pool to save computing time.
     # weight_dict is a dictionary that maps a pair of node
+    assert weighting_scheme in ['concept', 'structure', 'standard']
     (candidate_mappings, weight_dict) = compute_pool(instance1, attribute1, relation1,
                                                      instance2, attribute2, relation2,
-                                                     prefix1, prefix2, vectors, cutoff, diffsense, simfun, mwp)
+                                                     prefix1, prefix2, vectors, cutoff, diffsense, simfun, mwp,
+                                                     weighting_scheme=weighting_scheme)
 
     if verbose:
-        log_helper.debug( "Candidate mappings:")
-        log_helper.debug( candidate_mappings)
-        log_helper.debug( "Weight dictionary")
-        log_helper.debug( weight_dict)
+        log_helper.debug("Candidate mappings:")
+        log_helper.debug(candidate_mappings)
+        log_helper.debug("Weight dictionary")
+        log_helper.debug(weight_dict)
     best_match_num = 0
     # initialize best match mapping
     # the ith entry is the node index in AMR 2 which maps to the ith node in AMR 1
     best_mapping = [-1] * len(instance1)
     for i in range(0, iteration_num):
         if verbose:
-            log_helper.debug( "Iteration", i)
+            log_helper.debug("Iteration", i)
         if i == 0:
             # smart initialization used for the first round
             cur_mapping = smart_init_mapping(candidate_mappings, instance1, instance2)
@@ -192,14 +201,14 @@ def get_best_match(instance1, attribute1, relation1,
         # compute current triple match number
         match_num = compute_match(cur_mapping, weight_dict)
         if verbose:
-            log_helper.debug( "Node mapping at start", cur_mapping)
-            log_helper.debug( "Triple match number at start:", match_num)
+            log_helper.debug("Node mapping at start", cur_mapping)
+            log_helper.debug("Triple match number at start:", match_num)
         while True:
             # get best gain
             (gain, new_mapping) = get_best_gain(cur_mapping, candidate_mappings, weight_dict,
                                                 len(instance2), match_num)
             if verbose:
-                log_helper.debug( "Gain after the hill-climbing", gain)
+                log_helper.debug("Gain after the hill-climbing", gain)
             # hill-climbing until there will be no gain for new node mapping
             if gain <= 0.0000000001:
                 break
@@ -207,23 +216,22 @@ def get_best_match(instance1, attribute1, relation1,
             match_num += gain
             cur_mapping = new_mapping[:]
             if verbose:
-                log_helper.debug( "Update triple match number to:", match_num)
-                log_helper.debug( "Current mapping:", cur_mapping)
+                log_helper.debug("Update triple match number to:", match_num)
+                log_helper.debug("Current mapping:", cur_mapping)
         if match_num > best_match_num:
             best_mapping = cur_mapping[:]
             best_match_num = match_num
     return best_mapping, best_match_num
 
 
-
-def maybe_get_vec(word, vecs, mwp ="split"):
+def maybe_get_vec(word, vecs, mwp="split"):
     v = None
     if word in vecs:
         v = np.copy(vecs[word])
-    #if it's a multi-word concept and not contained in vectors
+    # if it's a multi-word concept and not contained in vectors
     elif "-" in word:
 
-        #if mwp strat = split, split multi-word and sum partial tokens
+        # if mwp strat = split, split multi-word and sum partial tokens
         if mwp == "split":
             ws = word.split("-")
             l = []
@@ -233,30 +241,29 @@ def maybe_get_vec(word, vecs, mwp ="split"):
             if l:
                 v = np.sum(np.array(l), axis=0)
     return v
-    
-def maybe_sim(a, b, vecs, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp ="split"):
-    
+
+
+def maybe_sim(a, b, vecs, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp="split"):
     # if identical, return 1
     if a == b:
         return 1.00
-    
+
     # in case one or two are a pred, we also keep a string without the sense
-    
+
     a_wo_sense = None
     b_wo_sense = None
 
-
-    #if it's a pred we remove the sense, for now
+    # if it's a pred we remove the sense, for now
     if "-" in a and re.match(".*[0-9]+", a):
         a_wo_sense = "-".join(a.split("-")[:-1])
-    if "-" in b and  re.match(".*[0-9]+", b):
+    if "-" in b and re.match(".*[0-9]+", b):
         b_wo_sense = "-".join(b.split("-")[:-1])
 
     # if preds are equal but not sense return diffsense score, e.g., hit-01 vs hit-02
     if a_wo_sense and b_wo_sense and a_wo_sense == b_wo_sense:
         return 1.00 * diffsense
 
-    #if same string but only one is pred --> different sense of concept, e.g. hit-01 vs hit
+    # if same string but only one is pred --> different sense of concept, e.g. hit-01 vs hit
     elif a_wo_sense and a_wo_sense == b:
         return 1.00 * diffsense
 
@@ -279,22 +286,22 @@ def maybe_sim(a, b, vecs, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp ="sp
 
     # if it's a pred, we add the vector for the morphological 3rd person extension
     if "-" in a and a_wo_sense:
-        v = maybe_get_vec(a_wo_sense+"s", vecs, mwp="None")
+        v = maybe_get_vec(a_wo_sense + "s", vecs, mwp="None")
         if v is not None:
             a_vec += v
     if "-" in b and b_wo_sense:
-        v = maybe_get_vec(b_wo_sense+"s", vecs, mwp="None")
+        v = maybe_get_vec(b_wo_sense + "s", vecs, mwp="None")
         if v is not None:
             b_vec += v
 
-    #similarity 
+    # similarity
     sim = simfun(a_vec, b_vec)
     if not sim:
         return 0.00
 
     if sim > cutoff:
 
-        #eg. hit-01 vs punch or hit-01 vs punch-0x ---> diffsense*(sim(hit,punch))
+        # eg. hit-01 vs punch or hit-01 vs punch-0x ---> diffsense*(sim(hit,punch))
         if bool(a_wo_sense) or bool(b_wo_sense):
             return sim * diffsense
         else:
@@ -302,26 +309,28 @@ def maybe_sim(a, b, vecs, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp ="sp
     else:
         return 0.00
 
+
 def maybe_has_sim(a, b, sim_dict, vecs={}, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp="split"):
-    #maybe we have the computed similarities already?
-    if a+"_"+b in sim_dict: 
-        return sim_dict[a+"_"+b] 
-    
-    if b+"_"+a in sim_dict:
-        return sim_dict[b+"_"+a] 
+    # maybe we have the computed similarities already?
+    if a + "_" + b in sim_dict:
+        return sim_dict[a + "_" + b]
+
+    if b + "_" + a in sim_dict:
+        return sim_dict[b + "_" + a]
     else:
-        #compute similarity and save
-        s=maybe_sim(a, b, vecs, cutoff=cutoff, diffsense=diffsense, simfun=simfun, mwp="split")
+        # compute similarity and save
+        s = maybe_sim(a, b, vecs, cutoff=cutoff, diffsense=diffsense, simfun=simfun, mwp="split")
         if verbose:
-            log_helper.debug( "Similarity", a, b, s)
-        sim_dict[a+"_"+b] = s
-        sim_dict[b+"_"+a] = s
+            log_helper.debug("Similarity", a, b, s)
+        sim_dict[a + "_" + b] = s
+        sim_dict[b + "_" + a] = s
         return s
-        
+
 
 def compute_pool(instance1, attribute1, relation1,
                  instance2, attribute2, relation2,
-                 prefix1, prefix2, vectors,cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp="split"):
+                 prefix1, prefix2, vectors, cutoff=0.5, diffsense=0.5, simfun=cosine_sim, mwp="split",
+                 weighting_scheme='standard'):
     """
     compute all possible node mapping candidates and their weights (the graded triple matching number gain resulting from
     mapping one node in AMR 1 to another node in AMR2)
@@ -346,6 +355,7 @@ def compute_pool(instance1, attribute1, relation1,
 
 
     """
+    assert weighting_scheme in ['concept', 'structure', 'standard']
     candidate_mapping = []
     weight_dict = {}
     sim_dict = {}
@@ -353,8 +363,7 @@ def compute_pool(instance1, attribute1, relation1,
         # each candidate mapping is a set of node indices
         candidate_mapping.append(set())
         for j in range(0, len(instance2)):
-            
-            
+
             # if both triples are instance triples and have the same value
             """
             if instance1[i][0].lower() == instance2[j][0].lower() \
@@ -372,13 +381,15 @@ def compute_pool(instance1, attribute1, relation1,
                     weight_dict[node_pair][-1] = 1
             """
 
-            #if both triples are instance triples then we asses the similarity of their value
+            # if both triples are instance triples then we asses the similarity of their value
             if instance1[i][0].lower() == instance2[j][0].lower():
                 value_1 = instance1[i][2].lower()
                 value_2 = instance2[j][2].lower()
-                similarity = maybe_has_sim(value_1, value_2, sim_dict,vecs=vectors, 
-                                           cutoff=cutoff, diffsense=diffsense, 
+                similarity = maybe_has_sim(value_1, value_2, sim_dict, vecs=vectors,
+                                           cutoff=cutoff, diffsense=diffsense,
                                            simfun=simfun, mwp=mwp)
+                if weighting_scheme == 'concept':
+                    similarity *= 3
                 # get node index by stripping the prefix
                 node1_index = int(instance1[i][1][len(prefix1):])
                 node2_index = int(instance2[j][1][len(prefix2):])
@@ -406,10 +417,10 @@ def compute_pool(instance1, attribute1, relation1,
                     weight_dict[node_pair] = {}
                     weight_dict[node_pair][-1] = 1
             # if it's (top, x, conceptA) and (top, y, conceptB) and conceptA != conceptB --> similarity
-            elif attribute1[i][0].lower() == attribute2[j][0].lower()  == "top":
+            elif attribute1[i][0].lower() == attribute2[j][0].lower() == "top":
                 value_1 = attribute1[i][2].lower()
                 value_2 = attribute2[j][2].lower()
-                similarity = maybe_has_sim(value_1, value_2, sim_dict, vecs=vectors, 
+                similarity = maybe_has_sim(value_1, value_2, sim_dict, vecs=vectors,
                                            cutoff=cutoff, diffsense=diffsense, simfun=simfun, mwp=mwp)
                 # get node index by stripping the prefix
                 node1_index = int(attribute1[i][1][len(prefix1):])
@@ -439,36 +450,37 @@ def compute_pool(instance1, attribute1, relation1,
                     # update weight_dict weight. Note that we need to update both entries for future search
                     # i.e weight_dict[node_pair1][node_pair2]
                     #     weight_dict[node_pair2][node_pair1]
+                    weight = 3 if weighting_scheme == 'structure' else 1
                     if node1_index_amr1 > node2_index_amr1:
                         # swap node_pair1 and node_pair2
                         node_pair1 = (node2_index_amr1, node2_index_amr2)
                         node_pair2 = (node1_index_amr1, node1_index_amr2)
                     if node_pair1 in weight_dict:
                         if node_pair2 in weight_dict[node_pair1]:
-                            weight_dict[node_pair1][node_pair2] += 1
+                            weight_dict[node_pair1][node_pair2] += weight
                         else:
-                            weight_dict[node_pair1][node_pair2] = 1
+                            weight_dict[node_pair1][node_pair2] = weight
                     else:
                         weight_dict[node_pair1] = {}
                         weight_dict[node_pair1][-1] = 0
-                        weight_dict[node_pair1][node_pair2] = 1
+                        weight_dict[node_pair1][node_pair2] = weight
                     if node_pair2 in weight_dict:
                         if node_pair1 in weight_dict[node_pair2]:
-                            weight_dict[node_pair2][node_pair1] += 1
+                            weight_dict[node_pair2][node_pair1] += weight
                         else:
-                            weight_dict[node_pair2][node_pair1] = 1
+                            weight_dict[node_pair2][node_pair1] = weight
                     else:
                         weight_dict[node_pair2] = {}
                         weight_dict[node_pair2][-1] = 0
-                        weight_dict[node_pair2][node_pair1] = 1
+                        weight_dict[node_pair2][node_pair1] = weight
                 else:
                     # two node pairs are the same. So we only update weight_dict once.
                     # this generally should not happen.
                     if node_pair1 in weight_dict:
-                        weight_dict[node_pair1][-1] += 1
+                        weight_dict[node_pair1][-1] += weight
                     else:
                         weight_dict[node_pair1] = {}
-                        weight_dict[node_pair1][-1] = 1
+                        weight_dict[node_pair1][-1] = weight
     return candidate_mapping, weight_dict
 
 
@@ -520,7 +532,7 @@ def smart_init_mapping(candidate_mapping, instance1, instance2):
                 result[i] = candidates[rid]
                 break
     return result
-        
+
 
 def random_init_mapping(candidate_mapping):
     """
@@ -557,7 +569,7 @@ def random_init_mapping(candidate_mapping):
             result.append(-1)
     return result
 
- 
+
 def compute_match(mapping, weight_dict):
     """
     Given a node mapping, compute match number based on weight_dict.
@@ -570,11 +582,11 @@ def compute_match(mapping, weight_dict):
     """
     # If this mapping has been investigated before, retrieve the value instead of re-computing.
     if verbose:
-        log_helper.debug( "Computing match for mapping")
-        log_helper.debug( mapping)
+        log_helper.debug("Computing match for mapping")
+        log_helper.debug(mapping)
     if tuple(mapping) in match_triple_dict:
         if verbose:
-            log_helper.debug( "saved value", match_triple_dict[tuple(mapping)])
+            log_helper.debug("saved value", match_triple_dict[tuple(mapping)])
         return match_triple_dict[tuple(mapping)]
     match_num = 0
     # i is node index in AMR 1, m is node index in AMR 2
@@ -587,13 +599,13 @@ def compute_match(mapping, weight_dict):
         if current_node_pair not in weight_dict:
             continue
         if verbose:
-            log_helper.debug( "node_pair", current_node_pair)
+            log_helper.debug("node_pair", current_node_pair)
         for key in weight_dict[current_node_pair]:
             if key == -1:
                 # matching triple resulting from instance/attribute triples
                 match_num += weight_dict[current_node_pair][key]
                 if verbose:
-                    log_helper.debug( "instance/attribute match", weight_dict[current_node_pair][key])
+                    log_helper.debug("instance/attribute match", weight_dict[current_node_pair][key])
             # only consider node index larger than i to avoid duplicates
             # as we store both weight_dict[node_pair1][node_pair2] and
             #     weight_dict[node_pair2][node_pair1] for a relation
@@ -602,12 +614,12 @@ def compute_match(mapping, weight_dict):
             elif mapping[key[0]] == key[1]:
                 match_num += weight_dict[current_node_pair][key]
                 if verbose:
-                    log_helper.debug( "relation match with", key, weight_dict[current_node_pair][key])
+                    log_helper.debug("relation match with", key, weight_dict[current_node_pair][key])
     if verbose:
-        log_helper.debug( "match computing complete, result:", match_num)
+        log_helper.debug("match computing complete, result:", match_num)
     # update match_triple_dict
     match_triple_dict[tuple(mapping)] = match_num
-    return match_num  
+    return match_num
 
 
 def move_gain(mapping, node_id, old_id, new_id, weight_dict, match_num):
@@ -757,17 +769,17 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                 # remap i to another unmatched node (move)
                 # (i, m) -> (i, nm)
                 if verbose:
-                    log_helper.debug( "Remap node", i, "from ", nid, "to", nm)
+                    log_helper.debug("Remap node", i, "from ", nid, "to", nm)
                 mv_gain = move_gain(mapping, i, nid, nm, weight_dict, cur_match_num)
                 if verbose:
-                    log_helper.debug( "Move gain:", mv_gain)
+                    log_helper.debug("Move gain:", mv_gain)
                     new_mapping = mapping[:]
                     new_mapping[i] = nm
                     new_match_num = compute_match(new_mapping, weight_dict)
                     if new_match_num != cur_match_num + mv_gain:
-                        log_helper.error( mapping, new_mapping)
-                        log_helper.error( "Inconsistency in computing: move gain", cur_match_num, mv_gain, \
-                            new_match_num)
+                        log_helper.error(mapping, new_mapping)
+                        log_helper.error("Inconsistency in computing: move gain", cur_match_num, mv_gain, \
+                                         new_match_num)
                 if mv_gain > largest_gain:
                     largest_gain = mv_gain
                     node1 = i
@@ -775,22 +787,22 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                     use_swap = False
     # compute swap gain
     for i, m in enumerate(mapping):
-        for j in range(i+1, len(mapping)):
+        for j in range(i + 1, len(mapping)):
             m2 = mapping[j]
             # swap operation (i, m) (j, m2) -> (i, m2) (j, m)
             # j starts from i+1, to avoid duplicate swap
             if verbose:
-                log_helper.debug( "Swap node", i, "and", j)
-                log_helper.debug( "Before swapping:", i, "-", m, ",", j, "-", m2)
-                log_helper.debug( mapping)
-                log_helper.debug( "After swapping:", i, "-", m2, ",", j, "-", m)
+                log_helper.debug("Swap node", i, "and", j)
+                log_helper.debug("Before swapping:", i, "-", m, ",", j, "-", m2)
+                log_helper.debug(mapping)
+                log_helper.debug("After swapping:", i, "-", m2, ",", j, "-", m)
             sw_gain = swap_gain(mapping, i, m, j, m2, weight_dict, cur_match_num)
             if verbose:
-                log_helper.debug( "Swap gain:", sw_gain)
+                log_helper.debug("Swap gain:", sw_gain)
                 new_mapping = mapping[:]
                 new_mapping[i] = m2
                 new_mapping[j] = m
-                log_helper.debug( new_mapping)
+                log_helper.debug(new_mapping)
                 new_match_num = compute_match(new_mapping, weight_dict)
                 """
                 #commented out because soft gain
@@ -809,20 +821,20 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
     if node1 is not None:
         if use_swap:
             if verbose:
-                log_helper.debug( "Use swap gain")
+                log_helper.debug("Use swap gain")
             temp = cur_mapping[node1]
             cur_mapping[node1] = cur_mapping[node2]
             cur_mapping[node2] = temp
         else:
             if verbose:
-                log_helper.debug( "Use move gain")
+                log_helper.debug("Use move gain")
             cur_mapping[node1] = node2
     else:
         if verbose:
-            log_helper.debug( "no move/swap gain found")
+            log_helper.debug("no move/swap gain found")
     if verbose:
-        log_helper.debug( "Original mapping", mapping)
-        log_helper.debug( "Current mapping", cur_mapping)
+        log_helper.debug("Original mapping", mapping)
+        log_helper.debug("Current mapping", cur_mapping)
     return largest_gain, cur_mapping
 
 
@@ -861,32 +873,30 @@ def compute_f(match_num, test_num, gold_num):
     """
     if test_num == 0 or gold_num == 0:
         return 0.00, 0.00, 0.00
-    #print match_num, test_num
-    #print match_num, gold_num
+    # print match_num, test_num
+    # print match_num, gold_num
     precision = (0.000 + match_num) / (test_num + 0.000)
     recall = (0.000 + match_num) / (gold_num + 0.000)
     if (precision + recall) != 0:
         f_score = 2 * precision * recall / (precision + recall)
         if verbose:
-            log_helper.debug( "F-score:", f_score)
+            log_helper.debug("F-score:", f_score)
         return precision, recall, f_score
     else:
         if verbose:
-            log_helper.debug( "F-score:", "0.0")
+            log_helper.debug("F-score:", "0.0")
         return precision, recall, 0.00
 
 
 def get_sim_fun(string):
-
     if string == "cosine":
         return cosine_sim
-    
+
     if string == "euclidean":
         return euclidean_sim
-    
+
     if string == "cityblock":
         return cityblock_sim
-
 
 
 def main(arguments):
@@ -925,12 +935,12 @@ def main(arguments):
         if cur_amr1 == "" and cur_amr2 == "":
             break
         if cur_amr1 == "":
-            log_helper.error( "Error: File 1 has less AMRs than file 2")
-            log_helper.error( "Ignoring remaining AMRs")
+            log_helper.error("Error: File 1 has less AMRs than file 2")
+            log_helper.error("Ignoring remaining AMRs")
             break
         if cur_amr2 == "":
-            log_helper.error( "Error: File 2 has less AMRs than file 1")
-            log_helper.error( "Ignoring remaining AMRs")
+            log_helper.error("Error: File 2 has less AMRs than file 1")
+            log_helper.error("Ignoring remaining AMRs")
             break
         amr1 = amr.AMR.parse_AMR_line(cur_amr1, arguments.do_not_mark_quotes)
         amr2 = amr.AMR.parse_AMR_line(cur_amr2, arguments.do_not_mark_quotes)
@@ -944,30 +954,32 @@ def main(arguments):
         (instance2, attributes2, relation2) = amr2.get_triples()
         if verbose:
             # print parse results of two AMRs
-            log_helper.debug( "AMR pair", sent_num)
-            log_helper.debug( "============================================")
-            log_helper.debug( "AMR 1 (one-line):", cur_amr1)
-            log_helper.debug( "AMR 2 (one-line):", cur_amr2)
-            log_helper.debug( "Instance triples of AMR 1:", len(instance1))
-            log_helper.debug( instance1)
-            log_helper.debug( "Attribute triples of AMR 1:", len(attributes1))
-            log_helper.debug( attributes1)
-            log_helper.debug( "Relation triples of AMR 1:", len(relation1))
-            log_helper.debug( relation1)
-            log_helper.debug( "Instance triples of AMR 2:", len(instance2))
-            log_helper.debug( instance2)
-            log_helper.debug( "Attribute triples of AMR 2:", len(attributes2))
-            log_helper.debug( attributes2)
-            log_helper.debug( "Relation triples of AMR 2:", len(relation2))
-            log_helper.debug( relation2)
+            log_helper.debug("AMR pair", sent_num)
+            log_helper.debug("============================================")
+            log_helper.debug("AMR 1 (one-line):", cur_amr1)
+            log_helper.debug("AMR 2 (one-line):", cur_amr2)
+            log_helper.debug("Instance triples of AMR 1:", len(instance1))
+            log_helper.debug(instance1)
+            log_helper.debug("Attribute triples of AMR 1:", len(attributes1))
+            log_helper.debug(attributes1)
+            log_helper.debug("Relation triples of AMR 1:", len(relation1))
+            log_helper.debug(relation1)
+            log_helper.debug("Instance triples of AMR 2:", len(instance2))
+            log_helper.debug(instance2)
+            log_helper.debug("Attribute triples of AMR 2:", len(attributes2))
+            log_helper.debug(attributes2)
+            log_helper.debug("Relation triples of AMR 2:", len(relation2))
+            log_helper.debug(relation2)
         (best_mapping, best_match_num_soft) = get_best_match(instance1, attributes1, relation1,
-                                                        instance2, attributes2, relation2,
-                                                        prefix1, prefix2,vectors,arguments.cutoff, 
-                                                        arguments.diffsense, simfun, arguments.multi_token_concept_strategy)
+                                                             instance2, attributes2, relation2,
+                                                             prefix1, prefix2, vectors, arguments.cutoff,
+                                                             arguments.diffsense, simfun,
+                                                             arguments.multi_token_concept_strategy,
+                                                             weighting_scheme=arguments.weighting_scheme)
         if verbose:
-            log_helper.debug( "best match number", best_match_num_soft)
-            log_helper.debug( "best node mapping", best_mapping)
-            log_helper.debug( "Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2))
+            log_helper.debug("best match number", best_match_num_soft)
+            log_helper.debug("best node mapping", best_mapping)
+            log_helper.debug("Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2))
         test_triple_num = len(instance1) + len(attributes1) + len(relation1)
         gold_triple_num = len(instance2) + len(attributes2) + len(relation2)
         if not single_score:
@@ -975,12 +987,12 @@ def main(arguments):
             (precision, recall, best_f_score) = compute_f(best_match_num_soft,
                                                           test_triple_num,
                                                           gold_triple_num)
-            #print "Sentence", sent_num
+            # print "Sentence", sent_num
             if pr_flag:
-                print ("Precision: %.3f" % precision)
-                print ("Recall: %.3f" % recall)
-#            print "Smatch score: %.3f" % best_f_score
-            print ("Smatch score F1 %.3f" % best_f_score)
+                print("Precision: %.3f" % precision)
+                print("Recall: %.3f" % recall)
+            #            print "Smatch score: %.3f" % best_f_score
+            print("Smatch score F1 %.3f" % best_f_score)
         total_match_num_soft += best_match_num_soft
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
@@ -988,48 +1000,47 @@ def main(arguments):
         match_triple_dict.clear()
         sent_num += 1
     if verbose:
-        log_helper.debug( "Total match number, total triple number in AMR 1, and total triple number in AMR 2:")
-        log_helper.debug( total_match_num_soft, total_test_num, total_gold_num)
-        log_helper.debug( "---------------------------------------------------------------------------------")
+        log_helper.debug("Total match number, total triple number in AMR 1, and total triple number in AMR 2:")
+        log_helper.debug(total_match_num_soft, total_test_num, total_gold_num)
+        log_helper.debug("---------------------------------------------------------------------------------")
     # output document-level smatch score (a single f-score for all AMR pairs in two files)
     if single_score:
         (precision, recall, best_f_score) = compute_f(total_match_num_soft, total_test_num, total_gold_num)
         if pr_flag:
-            print ("Precision: %.3f" % precision)
-            print ("Recall: %.3f" % recall)
-    print ("Document F-score: %.3f, %.4f" % (best_f_score, best_f_score))
+            print("Precision: %.3f" % precision)
+            print("Recall: %.3f" % recall)
+    print("Document F-score: %.3f, %.4f" % (best_f_score, best_f_score))
     args.f[0].close()
     args.f[1].close()
 
 
-
-#code necessary for Marco Damonte's subtask metric like reentrancies
+# code necessary for Marco Damonte's subtask metric like reentrancies
 def compute_s2match_from_two_lists(list1, list2
-        , vectorpath="../vectors/glove.6B.100d.txt", simfun="cosine"
-        , cutoff=0.5, diffsense=0.5, mwp="split"):
-    
+                                   , vectorpath="../vectors/glove.6B.100d.txt", simfun="cosine"
+                                   , cutoff=0.5, diffsense=0.5, mwp="split"):
     def parse_relations(rels, v2c):
         var_list = []
         conc_list = []
         for r in rels:
-                if str(r[1]) not in var_list and str(r[1]) != "TOP" and r[1] in v2c:
-                        var_list.append(str(r[1]))
-                        conc_list.append(str(v2c[r[1]]))
-                if str(r[2]) not in var_list and r[2] in v2c:
-                        var_list.append(str(r[2]))
-                        conc_list.append(str(v2c[r[2]]))
+            if str(r[1]) not in var_list and str(r[1]) != "TOP" and r[1] in v2c:
+                var_list.append(str(r[1]))
+                conc_list.append(str(v2c[r[1]]))
+            if str(r[2]) not in var_list and r[2] in v2c:
+                var_list.append(str(r[2]))
+                conc_list.append(str(v2c[r[2]]))
         k = 0
-        rel_dict = []*len(var_list)
-        att_dict = []*len(var_list)
+        rel_dict = [] * len(var_list)
+        att_dict = [] * len(var_list)
         for v in var_list:
-                rel_dict.append({})
-                att_dict.append({})
-                for i in rels:
-                        if str(i[1]) == str(v) and i[2] in v2c:
-                                rel_dict[k][str(i[2])] = i[0]
-                                att_dict[k][i[0]] = str(v2c[i[2]])
-                k += 1
+            rel_dict.append({})
+            att_dict.append({})
+            for i in rels:
+                if str(i[1]) == str(v) and i[2] in v2c:
+                    rel_dict[k][str(i[2])] = i[0]
+                    att_dict[k][i[0]] = str(v2c[i[2]])
+            k += 1
         return amr.AMR(var_list, conc_list, rel_dict, att_dict)
+
     global verbose
     global iteration_num
     global single_score
@@ -1039,11 +1050,11 @@ def compute_s2match_from_two_lists(list1, list2
     # set the iteration number
     # total iteration number = restart number + 1
     iteration_num = 5
-    #if arguments.ms:
+    # if arguments.ms:
     #    single_score = False
-    #if arguments.v:
+    # if arguments.v:
     #    verbose = True
-    #if arguments.pr:
+    # if arguments.pr:
     pr_flag = True
     # matching triple number
     total_match_num_soft = 0
@@ -1054,7 +1065,7 @@ def compute_s2match_from_two_lists(list1, list2
     # sentence number
     sent_num = 1
     vectors = load_vecs(vectorpath)
-    for l1, l2 in zip(list1,list2): 
+    for l1, l2 in zip(list1, list2):
         lst_amr1, dic_amr1 = l1
         lst_amr2, dic_amr2 = l2
         amr1 = parse_relations(lst_amr1, dic_amr1)
@@ -1069,29 +1080,29 @@ def compute_s2match_from_two_lists(list1, list2
         (instance2, attributes2, relation2) = amr2.get_triples()
         if verbose:
             # print parse results of two AMRs
-            log_helper.debug( "AMR pair", sent_num)
-            log_helper.debug( "============================================")
-            log_helper.debug( "AMR 1 (one-line):", cur_amr1)
-            log_helper.debug( "AMR 2 (one-line):", cur_amr2)
-            log_helper.debug( "Instance triples of AMR 1:", len(instance1))
-            log_helper.debug( instance1)
-            log_helper.debug( "Attribute triples of AMR 1:", len(attributes1))
-            log_helper.debug( attributes1)
-            log_helper.debug( "Relation triples of AMR 1:", len(relation1))
-            log_helper.debug( relation1)
-            log_helper.debug( "Instance triples of AMR 2:", len(instance2))
-            log_helper.debug( instance2)
-            log_helper.debug( "Attribute triples of AMR 2:", len(attributes2))
-            log_helper.debug( attributes2)
-            log_helper.debug( "Relation triples of AMR 2:", len(relation2))
-            log_helper.debug( relation2)
+            log_helper.debug("AMR pair", sent_num)
+            log_helper.debug("============================================")
+            log_helper.debug("AMR 1 (one-line):", cur_amr1)
+            log_helper.debug("AMR 2 (one-line):", cur_amr2)
+            log_helper.debug("Instance triples of AMR 1:", len(instance1))
+            log_helper.debug(instance1)
+            log_helper.debug("Attribute triples of AMR 1:", len(attributes1))
+            log_helper.debug(attributes1)
+            log_helper.debug("Relation triples of AMR 1:", len(relation1))
+            log_helper.debug(relation1)
+            log_helper.debug("Instance triples of AMR 2:", len(instance2))
+            log_helper.debug(instance2)
+            log_helper.debug("Attribute triples of AMR 2:", len(attributes2))
+            log_helper.debug(attributes2)
+            log_helper.debug("Relation triples of AMR 2:", len(relation2))
+            log_helper.debug(relation2)
         (best_mapping, best_match_num_soft) = get_best_match(instance1, attributes1, relation1,
-                                                        instance2, attributes2, relation2,
-                                                        prefix1, prefix2,vectors,cutoff, diffsense, simfun, mwp)
+                                                             instance2, attributes2, relation2,
+                                                             prefix1, prefix2, vectors, cutoff, diffsense, simfun, mwp)
         if verbose:
-            log_helper.debug( "best match number", best_match_num_soft)
-            log_helper.debug( "best node mapping", best_mapping)
-            log_helper.debug( "Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2))
+            log_helper.debug("best match number", best_match_num_soft)
+            log_helper.debug("best node mapping", best_mapping)
+            log_helper.debug("Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2))
         test_triple_num = len(instance1) + len(attributes1) + len(relation1)
         gold_triple_num = len(instance2) + len(attributes2) + len(relation2)
         if not single_score:
@@ -1099,12 +1110,12 @@ def compute_s2match_from_two_lists(list1, list2
             (precision, recall, best_f_score) = compute_f(best_match_num_soft,
                                                           test_triple_num,
                                                           gold_triple_num)
-            #print "Sentence", sent_num
+            # print "Sentence", sent_num
             if pr_flag:
-                print ("Precision: %.3f" % precision)
-                print ("Recall: %.3f" % recall)
-#            print "Smatch score: %.3f" % best_f_score
-            print ("Smatch score F1 %.3f" % best_f_score)
+                print("Precision: %.3f" % precision)
+                print("Recall: %.3f" % recall)
+            #            print "Smatch score: %.3f" % best_f_score
+            print("Smatch score F1 %.3f" % best_f_score)
         total_match_num_soft += best_match_num_soft
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
@@ -1112,9 +1123,9 @@ def compute_s2match_from_two_lists(list1, list2
         match_triple_dict.clear()
         sent_num += 1
     if verbose:
-        log_helper.debug( "Total match number, total triple number in AMR 1, and total triple number in AMR 2:")
-        log_helper.debug( total_match_num_soft, total_test_num, total_gold_num)
-        log_helper.debug( "---------------------------------------------------------------------------------")
+        log_helper.debug("Total match number, total triple number in AMR 1, and total triple number in AMR 2:")
+        log_helper.debug(total_match_num_soft, total_test_num, total_gold_num)
+        log_helper.debug("---------------------------------------------------------------------------------")
     # output document-level smatch score (a single f-score for all AMR pairs in two files)
     return compute_f(total_match_num_soft, total_test_num, total_gold_num)
 
@@ -1123,10 +1134,10 @@ if __name__ == "__main__":
     parser = None
     args = None
     # only support python version 2.5 or later
-    import argparse
     parser = build_arg_parser()
     args = parser.parse_args()
     from helpers import LogHelper
+
     if args.v:
         ll = 1
     else:
