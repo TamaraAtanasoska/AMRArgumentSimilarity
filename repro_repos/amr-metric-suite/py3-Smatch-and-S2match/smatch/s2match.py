@@ -450,37 +450,36 @@ def compute_pool(instance1, attribute1, relation1,
                     # update weight_dict weight. Note that we need to update both entries for future search
                     # i.e weight_dict[node_pair1][node_pair2]
                     #     weight_dict[node_pair2][node_pair1]
-                    weight = 3 if weighting_scheme == 'structure' else 1
                     if node1_index_amr1 > node2_index_amr1:
                         # swap node_pair1 and node_pair2
                         node_pair1 = (node2_index_amr1, node2_index_amr2)
                         node_pair2 = (node1_index_amr1, node1_index_amr2)
                     if node_pair1 in weight_dict:
                         if node_pair2 in weight_dict[node_pair1]:
-                            weight_dict[node_pair1][node_pair2] += weight
+                            weight_dict[node_pair1][node_pair2] += 1
                         else:
-                            weight_dict[node_pair1][node_pair2] = weight
+                            weight_dict[node_pair1][node_pair2] = 1
                     else:
                         weight_dict[node_pair1] = {}
                         weight_dict[node_pair1][-1] = 0
-                        weight_dict[node_pair1][node_pair2] = weight
+                        weight_dict[node_pair1][node_pair2] = 1
                     if node_pair2 in weight_dict:
                         if node_pair1 in weight_dict[node_pair2]:
-                            weight_dict[node_pair2][node_pair1] += weight
+                            weight_dict[node_pair2][node_pair1] += 1
                         else:
-                            weight_dict[node_pair2][node_pair1] = weight
+                            weight_dict[node_pair2][node_pair1] = 1
                     else:
                         weight_dict[node_pair2] = {}
                         weight_dict[node_pair2][-1] = 0
-                        weight_dict[node_pair2][node_pair1] = weight
+                        weight_dict[node_pair2][node_pair1] = 1
                 else:
                     # two node pairs are the same. So we only update weight_dict once.
                     # this generally should not happen.
                     if node_pair1 in weight_dict:
-                        weight_dict[node_pair1][-1] += weight
+                        weight_dict[node_pair1][-1] += 1
                     else:
                         weight_dict[node_pair1] = {}
-                        weight_dict[node_pair1][-1] = weight
+                        weight_dict[node_pair1][-1] = 1
     return candidate_mapping, weight_dict
 
 
