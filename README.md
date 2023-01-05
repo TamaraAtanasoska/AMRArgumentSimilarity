@@ -59,6 +59,8 @@ To get the results using the S2match metric which is denoted as "concept" in the
 ```
 cd repro_repos/amr-metric-suite/py3-Smatch-and-S2match
 python smatch/s2match.py -f ../examples/a.txt ../examples/b.txt -cutoff 0.95 -weighting_scheme concept --ms
+```
+
 ### Evaluating with the AMR metric
 
 In the [```sim_preds/```](repro_repos/amr-argument-sim/scripts/sim_preds) folder, there are various predictions stored. To test-evaluate all of them with the AMR metric you can run the command below. You will see the output as the command runs.  
