@@ -1,4 +1,6 @@
+import argparse
 import numpy as np
+import pathlib
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -97,7 +99,7 @@ def main(config):
 
     tokenizer = T5Tokenizer.from_pretrained("t5-base", model_max_length=512)
 
-    df = pd.read_csv("premises_claims.csv", encoding="latin-1")
+    df = pd.read_csv(args.data_path, encoding="latin-1")
     df = df[["Premises", "Claim"]]
     df.Premises = "summarize: " + df.Premises
     print(df.head())
@@ -164,8 +166,16 @@ def main(config):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--data_path",
+        type=pathlib.Path,
+        help="Path to data",
+        required=True,
+    )
 
     with open("config-defaults.yaml", "r") as f:
         config = yaml.safe_load(f)
 
+    args = parser.parse_args()
     main(config)

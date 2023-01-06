@@ -132,7 +132,7 @@ dmypy.json
 .DS_store
 
 #Editor
-.swp
+*.swp
 
 #W&B
 conclusion_generation/fine_tuning/wandb
