@@ -8,6 +8,7 @@ import wandb
 import yaml
 
 from dataloader import CustomDataset
+from datetime import datetime
 from torch import cuda
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.optim.lr_scheduler import ExponentialLR
@@ -161,7 +162,8 @@ def main(config):
     for epoch in range(*config["val_epochs"].values()):
         predictions, actuals = validate(epoch, tokenizer, model, device, val_loader)
         final_df = pd.DataFrame({"Conclusion": predictions, "Premises": actuals})
-        final_df.to_csv("conclusions.csv")
+        date = datetime.now().strftime("%d_%m_%y-%H:%M")
+        final_df.to_csv(f"Conclusions_{date}.csv")
         print("Generated conclusions")
 
 
