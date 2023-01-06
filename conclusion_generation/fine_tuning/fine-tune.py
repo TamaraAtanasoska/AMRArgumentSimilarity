@@ -159,7 +159,7 @@ def main(config):
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"
     )
-    for epoch in range(*config["val_epochs"].values()):
+    for epoch in range(*config["valid_epochs"].values()):
         predictions, actuals = validate(epoch, tokenizer, model, device, val_loader)
         final_df = pd.DataFrame({"Conclusion": predictions, "Premises": actuals})
         date = datetime.now().strftime("%d_%m_%y-%H:%M")
