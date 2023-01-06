@@ -98,3 +98,16 @@ To test if the parser is working and the installation is correct, you can run:
 cd scripts
 python ./test_parse.py 
 ```
+
+## Datasets
+
+### AFS Dataset
+To test the metric on the [AFS dataset](https://nlds.soe.ucsc.edu/node/44), a rescaling scheme needs to be applied, as the metric is developped for [0,1] similarity schores, and AFS features [0,5] similarity scores.
+
+To merge the three topics of the argument facet similarity dataset into one csv, rescaling the scores from [0,5] to [0,1], along with binary {0, 1} labels run the following comand:
+
+```python scripts/rescale_AFS_dataset.py --afs_path <PATH_TO_AFS_CORPUS> --out_file <OUT_PATH>/AFS_corpus_combined.csv```
+
+The `<PATH_TO_AFS_CORPUS>` folder should contain the 3 argument similarity csv files distributed from the corpus official website. 
+
+The resulting CSV file is written to `<OUT_PATH>/AFS_corpus_combined.csv` and contains the following columns: `regression_label`, `sentence_1`, `sentence_2`, `topic`, `regression_label_binary`, `regression_label_scaled`. The first three columns are copied form the original dataset; the topic is ‘GM’, ‘GC’ or ‘DP’ depemding on argument topic; the binary label is 1 if the original label is above 4 or 5 and 0 otherwie; and the scaled label is min-max scaled to 0-1 values, scaling being applied per topic.
