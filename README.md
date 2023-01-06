@@ -101,12 +101,34 @@ python ./test_parse.py
 
 ## Datasets
 
+### Persuasive Essay Corpus
+
+The original paper [Opitz et al., 2021] uses [Argument Annotated Essays Corpus [Stab & Gurevych, 2017]](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/2422) for fine-tuning the conclusion T5 generation model. The paper states that “from all premise-conclusion-pairs annotated in this dataset, we retrieved all claims with their annotated premises. In addition, we employ all annotated major claims with their supportive claims as premise-conclusion-pairs” and that “whenever we encounter multiple premises or supportive claims of a single claim, we concatenate them in document order.”
+
+To generate the corpus for fine-tuning T5 summarization on the persuasive essay corpus run:
+
+```
+python scripts/generate_persuasive_essay_corpus.py --ann_dir <PATH_TO_DATASET>/ArgumentAnnotatedEssays-2.0/brat-project-final --out_path <PATH_TO_OUTPUT>/premises_conclusions.csv
+```
+
+Th script assumes `<PATH_TO_DATASET>/ArgumentAnnotatedEssays-2.0` folder contains the contents of the official dataset distribution. 
+
+The script reads the argumentative essay annotation files and extracts major claims, claims, and premises. The script writes to the `<PATH_TO_OUTPUT>/premises_conclusions.csv` file with 3 columns - `Essay`, `Premises`, `Claim`.
+
+The premises-claim pairs are created as follows: 
+
+1. All claims supporting a major claim are concatenated (separated with `' ### '`) and paired with the major claim. If there are several major claims,  all of the major claims get the same supporting claim sets, e.g `essay0, claim1 ### claim2 ### claim3, major_claim1`
+2. All premises supproting a claim are concatenated in the same way and paired with the claim, e.g `essay0, claim1 ### claim2 ### claim3, claim4`
+3. All premises supproting a premise are concatenated in the same way and paird with the premies, e.g `essay0, premise1 ### premise2 ### premise3, premise4`
+
 ### AFS Dataset
 To test the metric on the [AFS dataset](https://nlds.soe.ucsc.edu/node/44), a rescaling scheme needs to be applied, as the metric is developped for [0,1] similarity schores, and AFS features [0,5] similarity scores.
 
 To merge the three topics of the argument facet similarity dataset into one csv, rescaling the scores from [0,5] to [0,1], along with binary {0, 1} labels run the following comand:
 
-```python scripts/rescale_AFS_dataset.py --afs_path <PATH_TO_AFS_CORPUS> --out_file <OUT_PATH>/AFS_corpus_combined.csv```
+```
+python scripts/rescale_AFS_dataset.py --afs_path <PATH_TO_AFS_CORPUS> --out_file <OUT_PATH>/AFS_corpus_combined.csv
+```
 
 The `<PATH_TO_AFS_CORPUS>` folder should contain the 3 argument similarity csv files distributed from the corpus official website. 
 
