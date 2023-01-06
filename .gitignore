@@ -133,3 +133,9 @@ dmypy.json
 
 #Editor
 .swp
+
+#W&B
+conclusion_generation/fine_tuning/wandb
+
+#temp dataset files
+conclusion_generation/fine_tuning/*.csv
