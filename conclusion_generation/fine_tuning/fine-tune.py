@@ -179,9 +179,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--wandb",
-        type=argparse.BooleanOptionalAction,
+        action="store_true",
         help="Enable W&B experiment tracking",
-        required=False,
     )
 
     with open("config-defaults.yaml", "r") as f:
