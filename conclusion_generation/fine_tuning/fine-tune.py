@@ -36,7 +36,7 @@ def train(epoch, tokenizer, model, device, loader, optimizer, scheduler):
         )
         loss = outputs[0]
 
-        if _ % 10 == 0:
+        if _ % 10 == 0 and args.wandb:
             wandb.log({"Training Loss": loss.item()})
 
         if _ % 500 == 0:
@@ -92,7 +92,8 @@ def validate(epoch, tokenizer, model, device, loader):
 
 
 def main(config):
-    # wandb.init(project="", entity="")
+    if args.wandb:
+        wandb.init(project="", entity="")
 
     torch.manual_seed(*config["seed"].values())
     np.random.seed(*config["seed"].values())
@@ -150,7 +151,8 @@ def main(config):
     )
     scheduler = ExponentialLR(optimizer, gamma=config["gamma"]["value"])
 
-    wandb.watch(model, log="all")
+    if args.wandb:
+        wandb.watch(model, log="all")
     print("Initiating Fine-Tuning for the model on our dataset")
 
     for epoch in range(*config["train_epochs"].values()):
@@ -174,6 +176,12 @@ if __name__ == "__main__":
         type=pathlib.Path,
         help="Path to data",
         required=True,
+    )
+    parser.add_argument(
+        "--wandb",
+        type=argparse.BooleanOptionalAction,
+        help="Enable W&B experiment tracking",
+        required=False,
     )
 
     with open("config-defaults.yaml", "r") as f:
