@@ -390,6 +390,8 @@ def compute_pool(instance1, attribute1, relation1,
                                            simfun=simfun, mwp=mwp)
                 if weighting_scheme == 'concept':
                     similarity *= 3
+                elif weighting_scheme == 'structure':
+                    similarity *= 0.3333
                 # get node index by stripping the prefix
                 node1_index = int(instance1[i][1][len(prefix1):])
                 node2_index = int(instance2[j][1][len(prefix2):])
