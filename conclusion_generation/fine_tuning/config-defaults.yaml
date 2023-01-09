@@ -1,0 +1,19 @@
+train_epochs:
+    value: 15
+valid_epochs:
+    value: 1
+train_batch_size:
+    value: 4
+valid_batch_size:
+    value: 4
+learning_rate:
+    value: 0.01
+seed:
+    value: 42
+max_len:
+    value: 512
+conclusion_len:
+    value: 150
+gamma: 
+    value: 0.95 
+    
