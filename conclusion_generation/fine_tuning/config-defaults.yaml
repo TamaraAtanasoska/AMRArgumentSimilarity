@@ -3,9 +3,9 @@ train_epochs:
 valid_epochs:
     value: 1
 train_batch_size:
-    value: 8
+    value: 4
 valid_batch_size:
-    value: 8
+    value: 4
 learning_rate:
     value: 0.01
 seed:
