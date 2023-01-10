@@ -14,9 +14,24 @@ def normalize_column(df, colname):
     return df[colname].apply(lambda x: min_max_normalize(x, min_value, max_value))
 
 
+def correct_parsing_errors(text):
+    text = text.replace('‰Ыќ', '"')
+    text = text.replace('‰ЫП', '"')
+    text = text.replace('‰ЫЄ', "'")
+    text = text.replace('‰ЫТ', ": ")
+    text = text.replace('‰ЫУ', '"')
+    text = text.replace('‰Ыў', '')
+    text = text.replace('‰Ы_', '')
+    text = text.replace('  ', ' ').replace('  ', ' ')
+    assert '‰' not in text, text
+    return text
+
+
 def read_AFS_data(path, name, encoding='cp1251'):
     df = pd.read_csv(path / f'ArgPairs_{name}.csv', encoding=encoding)
     df = df[['regression_label', 'sentence_1', 'sentence_2']]
+    df['sentence_1'] = df['sentence_1'].apply(correct_parsing_errors)
+    df['sentence_2'] = df['sentence_2'].apply(correct_parsing_errors)
     df['topic'] = name
     df['regression_label'] = df['regression_label'].apply(float)
     df['regression_label_binary'] = df['regression_label'].apply(lambda x: 1 if x > 3 else 0)
