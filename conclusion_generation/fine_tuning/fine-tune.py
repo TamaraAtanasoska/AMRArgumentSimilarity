@@ -94,6 +94,19 @@ def main(config):
     if args.wandb:
         wandb.init(project="", entity="")
 
+    if args.wandb_sweep:
+        sweep_config = {
+            "method": "random",
+            "name": "sweep",
+            "metric": {"goal": "minimize", "name": "Training Loss"},
+            "parameters": {
+                "epochs": {"values": [5, 10, 15, 20, 25, 30]},
+                "lr": {"max": 0.1, "min": 0.0001},
+                "gamma": {"max": 1.0, "min": 0.2},
+            },
+        }
+        sweep_id = wandb.sweep(sweep=sweep_config, project="finetuning-sweep")
+
     torch.manual_seed(*config["seed"].values())
     np.random.seed(*config["seed"].values())
     torch.backends.cudnn.deterministic = True
@@ -168,6 +181,9 @@ def main(config):
         final_df.to_csv(f"Conclusions_{date}.csv")
         print("Generated conclusions")
 
+    if args.wandb_sweep:
+        wandb.agent(sweep_id, function=main, count=4)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -181,6 +197,11 @@ if __name__ == "__main__":
         "--wandb",
         action="store_true",
         help="Enable W&B experiment tracking",
+    )
+    parser.add_argument(
+        "--wandb_sweep",
+        action="store_true",
+        help="Enable a W&B sweep",
     )
 
     with open("config-defaults.yaml", "r") as f:
