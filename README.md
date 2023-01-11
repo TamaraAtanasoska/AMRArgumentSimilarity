@@ -127,18 +127,40 @@ The premises-claim pairs are created as follows:
 2. All premises supproting a claim are concatenated in the same way and paired with the claim, e.g `essay0, claim1 ### claim2 ### claim3, claim4`
 3. All premises supproting a premise are concatenated in the same way and paird with the premies, e.g `essay0, premise1 ### premise2 ### premise3, premise4`
 
+### UPK Dataset
+To test the metric on the [UPK Aspect dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/1998) a renaming scheme needs to be applied to obtain binary scores in accordance with the original article.
+
+```
+python scripts/rescale_upk_dataset.py --upk_path <path-to-upk-corpus-tsv> --out_file <out-path>/UPK_corpus.csv
+```
+
+The `<path-to-upk-corpus-tsv>` should be the UPK argument similarity tsv file distributed from the corpus official website. 
+
+The resulting CSV file is written to `<out-path>/UPK_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`. The sentence and topic columns are copied form the original dataset; the binary label is 1 if the original label is above 'HS' or 'SS' (*highly similar* or *somewhat similar*) and 0 otherwie.
+
+### BWS Dataset
+To test the metric on the [BWS dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/2496) a rescaling scheme needs to be applied to obtain binary scores.
+
+```
+python scripts/rescale_bws_dataset.py --bws_path <path-to-bws-corpus-csv> --out_file <out-path>/BWS_corpus.csv
+```
+
+The `<path-to-bws-corpus-csv>` should be the BWS argument similarity csv file distributed from the corpus official website. 
+
+The resulting CSV file is written to `<out-path>/BWS_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`, `regression_label`. The sentence, topic, and regression_label (*score*) columns are copied form the original dataset; the binary label is 1 if the original label is above 0.5 and 0 otherwie.
+
 ### AFS Dataset
 To test the metric on the [AFS dataset](https://nlds.soe.ucsc.edu/node/44), a rescaling scheme needs to be applied, as the metric is developped for [0,1] similarity schores, and AFS features [0,5] similarity scores.
 
 To merge the three topics of the argument facet similarity dataset into one csv, rescaling the scores from [0,5] to [0,1], along with binary {0, 1} labels run the following comand:
 
 ```
-python scripts/rescale_AFS_dataset.py --afs_path <PATH_TO_AFS_CORPUS> --out_file <OUT_PATH>/AFS_corpus_combined.csv
+python scripts/rescale_AFS_dataset.py --afs_path <path-to-afs-corpus> --out_file <out-path>/AFS_corpus.csv
 ```
 
-The `<PATH_TO_AFS_CORPUS>` folder should contain the 3 argument similarity csv files distributed from the corpus official website. 
+The `<path-to-afs-corpus>` folder should contain the 3 argument similarity csv files distributed from the corpus official website. 
 
-The resulting CSV file is written to `<OUT_PATH>/AFS_corpus_combined.csv` and contains the following columns: `regression_label`, `sentence_1`, `sentence_2`, `topic`, `regression_label_binary`, `regression_label_scaled`. The first three columns are copied form the original dataset; the topic is ‘GM’, ‘GC’ or ‘DP’ depemding on argument topic; the binary label is 1 if the original label is 4 or 5 and 0 otherwie; and the scaled label is min-max scaled to 0-1 values, scaling being applied per topic.
+The resulting CSV file is written to `<out-path>/AFS_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`, `regression_label`. The sentence columns are copied form the original dataset; the topic is ‘GM’, ‘GC’ or ‘DP’ depemding on argument topic; the binary label is 1 if the original label is 4 or 5 and 0 otherwie; and the scaled label is min-max scaled to 0-1 values, scaling being applied per topic.
 
 ## Fine-tuning and summarisation
 
