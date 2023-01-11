@@ -13,7 +13,7 @@ seed:
 max_len:
     value: 512
 conclusion_len:
-    value: 150
+    value: 128
 gamma: 
     value: 0.95 
     

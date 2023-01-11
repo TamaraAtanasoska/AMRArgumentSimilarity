@@ -105,7 +105,7 @@ def main(config):
     df.Premises = "summarize: " + df.Premises
     print(df.head())
 
-    train_size = 0.8
+    train_size = 0.9
     train_dataset = df.sample(frac=train_size, random_state=config["seed"]["value"])
     val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
     train_dataset = train_dataset.reset_index(drop=True)
