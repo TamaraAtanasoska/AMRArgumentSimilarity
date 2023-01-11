@@ -92,11 +92,8 @@ def main():
     elif args.wandb_sweep:
         wandb.init()
 
-    with open("config-defaults.yaml", "r") as f:
-        config = yaml.safe_load(f)
-
-    torch.manual_seed(*config["seed"].values())
-    np.random.seed(*config["seed"].values())
+    torch.manual_seed(wandb.config.seed)
+    np.random.seed(wandb.config.seed)
     torch.backends.cudnn.deterministic = True
 
     tokenizer = T5Tokenizer.from_pretrained("t5-base", model_max_length=512)
@@ -107,7 +104,7 @@ def main():
     print(df.head())
 
     train_size = 0.9
-    train_dataset = df.sample(frac=train_size, random_state=config["seed"]["value"])
+    train_dataset = df.sample(frac=train_size, random_state=wandb.config.seed)
     val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
     train_dataset = train_dataset.reset_index(drop=True)
 
@@ -118,24 +115,24 @@ def main():
     training_set = CustomDataset(
         train_dataset,
         tokenizer,
-        *config["max_len"].values(),
-        *config["conclusion_len"].values(),
+        wandb.config.max_len,
+        wandb.config.conclusion_len,
     )
     val_set = CustomDataset(
         val_dataset,
         tokenizer,
-        *config["max_len"].values(),
-        *config["conclusion_len"].values(),
+        wandb.config.max_len,
+        wandb.config.conclusion_len,
     )
 
     train_params = {
-        "batch_size": config["train_batch_size"]["value"],
+        "batch_size": wandb.config.train_batch_size,
         "shuffle": True,
         "num_workers": 0,
     }
 
     val_params = {
-        "batch_size": config["valid_batch_size"]["value"],
+        "batch_size": wandb.config.valid_batch_size,
         "shuffle": False,
         "num_workers": 0,
     }
@@ -147,15 +144,15 @@ def main():
     model = model.to(device)
 
     optimizer = torch.optim.AdamW(
-        model.parameters(), lr=config["learning_rate"]["value"]
+        model.parameters(), lr=wandb.config.learning_rate
     )
-    scheduler = ExponentialLR(optimizer, gamma=config["gamma"]["value"])
+    scheduler = ExponentialLR(optimizer, wandb.config.gamma)
 
     if args.wandb:
         wandb.watch(model, log="all")
     print("Initiating Fine-Tuning for the model on our dataset")
 
-    for epoch in range(*config["train_epochs"].values()):
+    for epoch in range(wandb.config.train_epochs):
         train_loss = train(epoch, tokenizer, model, device, training_loader, optimizer)
 
         if args.wandb or args.wandb_sweep:
@@ -167,7 +164,7 @@ def main():
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"
     )
-    for epoch in range(*config["valid_epochs"].values()):
+    for epoch in range(wandb.config.valid_epochs):
         predictions, actuals = validate(epoch, tokenizer, model, device, val_loader)
         final_df = pd.DataFrame({"Conclusion": predictions, "Premises": actuals})
         date = datetime.now().strftime("%d_%m_%y-%H:%M")
