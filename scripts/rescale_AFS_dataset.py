@@ -35,8 +35,8 @@ def read_AFS_data(path, name, encoding='cp1251'):
     df['topic'] = name
     df['regression_label'] = df['regression_label'].apply(float)
     df['regression_label_binary'] = df['regression_label'].apply(lambda x: 1 if x > 3 else 0)
-    df['regression_label_scaled'] = normalize_column(df, 'regression_label')
-    return df
+    df['regression_label'] = normalize_column(df, 'regression_label')
+    return df[['topic', 'sentence_1', 'sentence_2', 'regression_label_binary', 'regression_label']]
 
 
 def main():
