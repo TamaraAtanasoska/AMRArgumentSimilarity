@@ -136,7 +136,7 @@ python scripts/rescale_upk_dataset.py --upk_path <path-to-upk-corpus-tsv> --out_
 
 The `<path-to-upk-corpus-tsv>` should be the UPK argument similarity tsv file distributed from the corpus official website. 
 
-The resulting CSV file is written to `<out-path>/UPK_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`. The sentence and topic columns are copied form the original dataset; the binary label is 1 if the original label is above 'HS' or 'SS' (*highly similar* or *somewhat similar*) and 0 otherwie.
+The resulting CSV file is written to `<out-path>/UPK_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`. The sentence and topic columns are copied form the original dataset; the binary label is 1 if the original label is above 'HS' or 'SS' (*highly similar* or *somewhat similar*) and 0 otherwie. No scale of `regression_label` is available for this dataset, only binary scores.
 
 ### BWS Dataset
 To test the metric on the [BWS dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/2496) a rescaling scheme needs to be applied to obtain binary scores.
