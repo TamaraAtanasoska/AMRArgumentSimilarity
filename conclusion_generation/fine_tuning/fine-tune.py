@@ -18,7 +18,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 device = "cuda" if cuda.is_available() else "cpu"
 
 
-def train(epoch, tokenizer, model, device, loader, optimizer, scheduler):
+def train(epoch, tokenizer, model, device, loader, optimizer):
     model.train()
     for _, data in enumerate(loader, 0):
         y = data["target_ids"].to(device, dtype=torch.long)
@@ -45,7 +45,6 @@ def train(epoch, tokenizer, model, device, loader, optimizer, scheduler):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
 
 
 def validate(epoch, tokenizer, model, device, loader):
@@ -156,7 +155,8 @@ def main(config):
     print("Initiating Fine-Tuning for the model on our dataset")
 
     for epoch in range(*config["train_epochs"].values()):
-        train(epoch, tokenizer, model, device, training_loader, optimizer, scheduler)
+        train(epoch, tokenizer, model, device, training_loader, optimizer)
+        scheduler.step()
 
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"
