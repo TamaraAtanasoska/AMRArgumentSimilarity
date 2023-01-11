@@ -18,8 +18,9 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 device = "cuda" if cuda.is_available() else "cpu"
 
 
-def train(epoch, tokenizer, model, device, loader, optimizer, scheduler):
+def train(epoch, tokenizer, model, device, loader, optimizer):
     model.train()
+    cumu_loss = 0
     for _, data in enumerate(loader, 0):
         y = data["target_ids"].to(device, dtype=torch.long)
         y_ids = y[:, :-1].contiguous()
@@ -35,17 +36,11 @@ def train(epoch, tokenizer, model, device, loader, optimizer, scheduler):
             labels=lm_labels,
         )
         loss = outputs[0]
-
-        if _ % 10 == 0 and args.wandb:
-            wandb.log({"Training Loss": loss.item()})
-
-        if _ % 500 == 0:
-            print(f"Epoch: {epoch}, Loss:  {loss.item()}")
-
+        cumu_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+    return cumu_loss / len(loader)
 
 
 def validate(epoch, tokenizer, model, device, loader):
@@ -91,9 +86,14 @@ def validate(epoch, tokenizer, model, device, loader):
     return predictions, actuals
 
 
-def main(config):
+def main():
     if args.wandb:
         wandb.init(project="", entity="")
+    elif args.wandb_sweep:
+        wandb.init()
+
+    with open("config-defaults.yaml", "r") as f:
+        config = yaml.safe_load(f)
 
     torch.manual_seed(*config["seed"].values())
     np.random.seed(*config["seed"].values())
@@ -106,7 +106,7 @@ def main(config):
     df.Premises = "summarize: " + df.Premises
     print(df.head())
 
-    train_size = 0.8
+    train_size = 0.9
     train_dataset = df.sample(frac=train_size, random_state=config["seed"]["value"])
     val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
     train_dataset = train_dataset.reset_index(drop=True)
@@ -156,7 +156,13 @@ def main(config):
     print("Initiating Fine-Tuning for the model on our dataset")
 
     for epoch in range(*config["train_epochs"].values()):
-        train(epoch, tokenizer, model, device, training_loader, optimizer, scheduler)
+        train_loss = train(epoch, tokenizer, model, device, training_loader, optimizer)
+
+        if args.wandb or args.wandb_sweep:
+            wandb.log({"Training Loss": train_loss})
+
+        print(f"Epoch: {epoch}, Loss:  {train_loss}")
+        scheduler.step()
 
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"
@@ -182,9 +188,26 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable W&B experiment tracking",
     )
-
-    with open("config-defaults.yaml", "r") as f:
-        config = yaml.safe_load(f)
+    parser.add_argument(
+        "--wandb_sweep",
+        action="store_true",
+        help="Enable a W&B sweep",
+    )
 
     args = parser.parse_args()
-    main(config)
+
+    if args.wandb_sweep:
+        sweep_config = {
+            "method": "random",
+            "name": "sweep",
+            "metric": {"goal": "minimize", "name": "train_loss"},
+            "parameters": {
+                "train_epochs": {"values": [5, 10, 15, 20]},
+                "lr": {"values": [0.1, 0.003, 0.001, 0.0003, 0.0001]},
+                "gamma": {"values": [1.0, 0.9, 0.7, 0.5, 0.3]},
+            },
+        }
+        sweep_id = wandb.sweep(sweep=sweep_config, project="", entity="")
+        wandb.agent(sweep_id, function=main, count=4)
+
+    main()

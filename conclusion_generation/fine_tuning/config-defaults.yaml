@@ -7,13 +7,13 @@ train_batch_size:
 valid_batch_size:
     value: 4
 learning_rate:
-    value: 0.01
+    value: 0.003
 seed:
     value: 42
 max_len:
     value: 512
 conclusion_len:
-    value: 150
+    value: 128
 gamma: 
     value: 0.95 
     

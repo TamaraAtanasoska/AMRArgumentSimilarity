@@ -172,7 +172,7 @@ We have introduced [Weights & Biases](https://wandb.ai/site) as platform support
 
 If you decide to use the option, Weights & Biases will ask you to log in so you can have access to the visualizations and the logging of the runs. You will be prompted to pick an option about how to use W&B, and logging in will subsequently require your W&B API key. It might be more practical for you to already finish this setup before starting the training runs with this option. You can read [here](https://docs.wandb.ai/ref/cli/wandb-login) how to do that from the command line. Creating an account before this step is necessary. 
 
-It is necessay to initialise the entity and project name([example](https://github.com/TamaraAtanasoska/AMR_ArgumentSimilarity/blob/fine-tuning-summarisation/conclusion_generation/fine_tuning/fine-tune.py#L95). You can edit this line to add your own names, and learn more about these settings in the [W&B documentation](https://docs.wandb.ai/ref/python/init). 
+It is necessay to initialise the entity and project name: [example](https://github.com/TamaraAtanasoska/AMR_ArgumentSimilarity/blob/main/conclusion_generation/fine_tuning/fine-tune.py#L96). You can edit this line to add your own names, and learn more about these settings in the [W&B documentation](https://docs.wandb.ai/ref/python/init). 
 
 ### Fine-tuning a T5 model to perfom conclusion generation 
 
@@ -182,4 +182,13 @@ To fine-tune, you just need to pass the path to the location file:
 ```
 cd conclusion_generation/fine_tuning
 python fine-tune.py --data_path <path-to-dataset>
+```
+
+## Extra
+
+We looked for the best hyperparameters for the fine-tuning with a W&B sweep. Besides running the command below, you will need to add entity and project name as with the W&B experiment tracking in the code. In order to do that, search for a ```sweep_id``` occurence in [fine_tune.py](conclusion_generation/fine_tuning/fine-tune.py). We have very limited computational resources, so the sweep is with very small ranges and all strictly defined. 
+
+```
+cd conclusion_generation/fine_tuning
+python fine-tune.py --data_path <path-to-dataset> --wandb_sweep
 ```
