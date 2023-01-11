@@ -183,3 +183,12 @@ To fine-tune, you just need to pass the path to the location file:
 cd conclusion_generation/fine_tuning
 python fine-tune.py --data_path <path-to-dataset>
 ```
+
+## Extra
+
+We looked for the best hyperparameters for the fine-tuning with a W&B sweep. Besides running the command below, you will need to add entity and project name as with the W&B experiment tracking in the code. In order to do that, search for a ```sweep_id``` occurence in [fine_tune.py](conclusion_generation/fine_tuning/fine-tune.py). We have very limited computational resources, so the sweep is with very small ranges and all strictly defined. 
+
+```
+cd conclusion_generation/fine_tuning
+python fine-tune.py --data_path <path-to-dataset> --wandb_sweep
+```
