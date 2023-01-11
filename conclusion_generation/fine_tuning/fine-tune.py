@@ -202,9 +202,9 @@ if __name__ == "__main__":
             "name": "sweep",
             "metric": {"goal": "minimize", "name": "train_loss"},
             "parameters": {
-                "epochs": {"values": [5, 10, 15, 20, 25, 30]},
-                "lr": {"max": 0.1, "min": 0.0001},
-                "gamma": {"max": 1.0, "min": 0.2},
+                "train_epochs": {"values": [5, 10, 15, 20]},
+                "lr": {"values": [0.1, 0.003, 0.001, 0.0003, 0.0001]},
+                "gamma": {"values": [1.0, 0.9, 0.7, 0.5, 0.3]},
             },
         }
         sweep_id = wandb.sweep(sweep=sweep_config, project="", entity="")
