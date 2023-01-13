@@ -162,6 +162,8 @@ def main():
         print(f"Epoch: {epoch}, Loss:  {train_loss}")
         scheduler.step()
 
+    torch.save(model.state_dict(), "models/conclusion_generation_model.pth")
+
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"
     )
