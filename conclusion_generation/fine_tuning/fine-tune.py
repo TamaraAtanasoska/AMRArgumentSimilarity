@@ -143,9 +143,7 @@ def main():
     model = T5ForConditionalGeneration.from_pretrained("t5-base")
     model = model.to(device)
 
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=wandb.config.learning_rate
-    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=wandb.config.learning_rate)
     scheduler = ExponentialLR(optimizer, wandb.config.gamma)
 
     if args.wandb:
