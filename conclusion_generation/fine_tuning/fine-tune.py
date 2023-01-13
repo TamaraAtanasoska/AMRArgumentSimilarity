@@ -157,6 +157,7 @@ def main():
 
         if args.wandb or args.wandb_sweep:
             wandb.log({"Training Loss": train_loss})
+            wandb.log({"Epoch": epoch})
 
         print(f"Epoch: {epoch}, Loss:  {train_loss}")
         scheduler.step()
