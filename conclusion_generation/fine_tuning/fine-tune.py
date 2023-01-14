@@ -143,9 +143,7 @@ def main():
     model = T5ForConditionalGeneration.from_pretrained("t5-base")
     model = model.to(device)
 
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=wandb.config.learning_rate
-    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=wandb.config.learning_rate)
     scheduler = ExponentialLR(optimizer, wandb.config.gamma)
 
     if args.wandb:
@@ -157,9 +155,12 @@ def main():
 
         if args.wandb or args.wandb_sweep:
             wandb.log({"Training Loss": train_loss})
+            wandb.log({"Epoch": epoch})
 
         print(f"Epoch: {epoch}, Loss:  {train_loss}")
         scheduler.step()
+
+    torch.save(model.state_dict(), "models/conclusion_generation_model.pth")
 
     print(
         "Now generating consclusions on our fine tuned model for the validation dataset and saving it in a dataframe"

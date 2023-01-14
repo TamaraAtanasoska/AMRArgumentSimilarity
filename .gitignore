@@ -139,3 +139,6 @@ conclusion_generation/fine_tuning/wandb
 
 #temp dataset files
 conclusion_generation/fine_tuning/*.csv
+
+#models
+conclusion_generation/fine_tuning/models/*

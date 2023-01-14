@@ -183,6 +183,7 @@ To fine-tune, you just need to pass the path to the location file:
 cd conclusion_generation/fine_tuning
 python fine-tune.py --data_path <path-to-dataset>
 ```
+The fine-tuned model for inference will be saved at ```conclusion_generation/fine_tuning/models/conclusion_generation_model.pth```.
 
 ## Extra
 
