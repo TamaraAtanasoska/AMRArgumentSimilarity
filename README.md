@@ -105,6 +105,19 @@ cd scripts
 python ./test_parse.py 
 ```
 
+### Parsing the Datasets
+To generate amr parses of the datasets one can use `scripts/generate_amr_files.py`. It assumes the dataset is a csv and has two sentence columns to be processed into amr parses. To generate amr files run:
+```
+python scripts/generate_amr_files.py --data_path_csv <path-to-dataset-csv> --column_name1 <sentence_1_column_name>  --column_name2 <sentence_2_column_name> --out_path <path-to-put-amr-parses>
+```
+`<path-to-dataset-csv>` should contain the csv with the dataset with the columns indicated as `<sentence_1_column_name>` and  `<sentence_2_column_name>`. The `--column_name` arguments are potional: default names for the columns are `sentence_1` and `sentence_2`. The resulting amr files `amr.src` and `amr.tgt` are put into the folder indicated with `<path-to-put-amr-parses>`. 
+
+Additionally, a batch size can be provided to process the sentences in batches. The default is 5 sentences per batch:
+
+```
+python scripts/generate_amr_files.py --data_path_csv <path-to-dataset-csv> --column_name1 <sentence_1_column_name>  --column_name2 <sentence_2_column_name> --batch_size <batch_size> --out_path <path-to-put-amr-parses>
+```
+
 ## Datasets
 
 ### Persuasive Essay Corpus
@@ -114,12 +127,12 @@ The original paper [Opitz et al., 2021] uses [Argument Annotated Essays Corpus [
 To generate the corpus for fine-tuning T5 summarization on the persuasive essay corpus run:
 
 ```
-python scripts/generate_persuasive_essay_corpus.py --ann_dir <PATH_TO_DATASET>/ArgumentAnnotatedEssays-2.0/brat-project-final --out_path <PATH_TO_OUTPUT>/premises_conclusions.csv
+python scripts/generate_persuasive_essay_corpus.py --ann_dir <path-to-dataset>/ArgumentAnnotatedEssays-2.0/brat-project-final --out_path <path-to-output>/premises_conclusions.csv
 ```
 
-Th script assumes `<PATH_TO_DATASET>/ArgumentAnnotatedEssays-2.0` folder contains the contents of the official dataset distribution. 
+Th script assumes `<path-to-dataset>/ArgumentAnnotatedEssays-2.0` folder contains the contents of the official dataset distribution. 
 
-The script reads the argumentative essay annotation files and extracts major claims, claims, and premises. The script writes to the `<PATH_TO_OUTPUT>/premises_conclusions.csv` file with 3 columns - `Essay`, `Premises`, `Claim`.
+The script reads the argumentative essay annotation files and extracts major claims, claims, and premises. The script writes to the `<path-to-output>/premises_conclusions.csv` file with 3 columns - `Essay`, `Premises`, `Claim`.
 
 The premises-claim pairs are created as follows: 
 
