@@ -198,6 +198,20 @@ python fine-tune.py --data_path <path-to-dataset>
 ```
 The fine-tuned model for inference will be saved at ```conclusion_generation/fine_tuning/models/conclusion_generation_model.pth```.
 
+## Generating conclusions and summaries 
+
+You can find our pretrained conclusion generation model [here](https://drive.google.com/file/d/1X0g7T5lZ0UVzNFPA4dZ7WOzKthUVtwXa/view?usp=sharing). The script expects it to be placed in ```conclusion_generation/fine_tuning/models```. The summaries are generated from the T5-base model directly.
+
+The conclusions and summaries we generated from the three datasets we used can be found in [conclusion_generation/generation/datasets](conclusion_generation/generation/datasets).
+
+To generate summaries and conclusions you will need to run the script below with the respective command line argument:
+
+```
+cd conclusion_generation/generation
+python generate.py --data_path <path-to-dataset> --summaries #or --conclusions
+```
+
+
 ## Extra
 
 We looked for the best hyperparameters for the fine-tuning with a W&B sweep. Besides running the command below, you will need to add entity and project name as with the W&B experiment tracking in the code. In order to do that, search for a ```sweep_id``` occurence in [fine_tune.py](conclusion_generation/fine_tuning/fine-tune.py). We have very limited computational resources, so the sweep is with very small ranges and all strictly defined. 
