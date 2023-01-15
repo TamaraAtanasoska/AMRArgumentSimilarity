@@ -67,18 +67,24 @@ def main():
         model.load_state_dict(
             torch.load("../fine_tuning/models/conclusion_generation_model.pth")
         )
+    print("Model loaded")
 
+    print("Generating for sentence 1")
     final_df_1 = _create_predictions(df_1, model, tokenizer)
+    print("Generating for sentence 2")
     final_df_2 = _create_predictions(df_2, model, tokenizer)
 
     final_df_1.rename(columns={"0": "sentence_1"}, inplace=True)
     final_df_2.rename(columns={"0": "sentence_2"}, inplace=True)
 
+    print("Creating joined file")
     new_df = final_df_1.merge(final_df_2, left_index=True, right_index=True)
     if args.summaries:
         new_df.to_csv("Summaries_" + args.data_path.stem)
     if args.conclusions:
         new_df.to_csv("Conclusions_" + args.data_path.stem)
+
+    print("Generation finished")
 
 
 if __name__ == "__main__":
