@@ -80,9 +80,9 @@ def main():
     print("Creating joined file")
     new_df = final_df_1.merge(final_df_2, left_index=True, right_index=True)
     if args.summaries:
-        new_df.to_csv("Summaries_" + args.data_path.stem)
+        new_df.to_csv("Summaries_" + args.data_path.stem + ".csv")
     if args.conclusions:
-        new_df.to_csv("Conclusions_" + args.data_path.stem)
+        new_df.to_csv("Conclusions_" + args.data_path.stem + ".csv")
 
     print("Generation finished")
 
