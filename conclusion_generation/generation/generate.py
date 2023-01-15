@@ -15,7 +15,7 @@ device = "cuda" if cuda.is_available() else "cpu"
 # This code is a quickly adapted notebook, here to serve just as a hint
 # The values are hardcoded to match our needs
 # Happy to merge a PR making it more efficient
-def _create_predictions(df):
+def _create_predictions(df, model, tokenizer):
     val_set = CustomDataset(df, tokenizer, 512, 128)
 
     val_params = {"batch_size": 4, "shuffle": False, "num_workers": 0}
