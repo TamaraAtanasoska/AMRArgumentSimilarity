@@ -74,8 +74,8 @@ def main():
     print("Generating for sentence 2")
     final_df_2 = _create_predictions(df_2, model, tokenizer)
 
-    final_df_1.rename(columns={"0": "sentence_1"}, inplace=True)
-    final_df_2.rename(columns={"0": "sentence_2"}, inplace=True)
+    final_df_1.columns = ["sentence_1"]
+    final_df_2.columns = ["sentence_2"]
 
     print("Creating joined file")
     new_df = final_df_1.merge(final_df_2, left_index=True, right_index=True)
