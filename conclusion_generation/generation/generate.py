@@ -92,12 +92,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--summaries",
         action="store_true",
-        help="Enable W&B experiment tracking",
+        help="Generate summaries",
     )
     parser.add_argument(
         "--conclusions",
         action="store_true",
-        help="Enable a W&B sweep",
+        help="Generate conclusions",
     )
 
     args = parser.parse_args()
