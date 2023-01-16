@@ -1,10 +1,10 @@
-# Reproduction study: Argument Similarity with AMR
+# Validating AMR-based Argument Similarity on Novel Datasets
 
 This project reproduces the paper "Explainable Unsupervised Argument Similarity Rating with Abstract Meaning Representation and Conclusion Generation"(Opitz et al., 2021) [(link)](project_docs/OpitzEtAl21.pdf). 
 
-To reproduce the results of the study, two repositories originally written by the author are required: [the more general repository](https://github.com/flipz357/amr-metric-suite) that contains AMR metrics and the [paper-specific repository](https://github.com/Heidelberg-NLP/amr-argument-sim) that contains the AMR metric for argument similarity. As we focus on the results obtained in the paper, we provide both repositories cloned in [```repro_repos/```](repro_repos/). Additionally, we use the [AMR parser](https://github.com/bjascob/amrlib) as used in the paper as a library to turn sentences into graphs.
+To reproduce the results of the study, two repositories originally written by the author are required: [the more general repository](https://github.com/flipz357/amr-metric-suite) that contains AMR metrics and the [paper-specific repository](https://github.com/Heidelberg-NLP/amr-argument-sim) that contains the AMR metric for argument similarity. As we focus on the results obtained in the paper, we provide both repositories cloned in [```repro_repos/```](repro_repos/). Additionally, we use the [AMR parser](https://github.com/bjascob/amrlib) as used in the paper as a library to turn sentences into graphs. As there were no preserved models for summarisation and exact code and dataset for finetuning, we make our [own take](conclusion_generation/) and keep it as close as possible to the hints given from the researchers that authored the paper. 
 
-It will also include extensions to the original article. We plan to test the same method on two other argument similarity corpora (BWS Argument Similarity Corpus ([Thakur et al., 2021](https://arxiv.org/abs/2010.08240)) and Argument Facet Similarity Dataset ([Misra et al., 2016](https://aclanthology.org/W16-3636/))). We also plan to explore how conclusion generation fine-tuning affects the results and how the length of the premises interacts with conclusion generation contributions.
+Besides reproducing, we extend the original paper. We the same method on two other argument similarity corpora (BWS Argument Similarity Corpus ([Thakur et al., 2021](https://arxiv.org/abs/2010.08240)) and Argument Facet Similarity Dataset ([Misra et al., 2016](https://aclanthology.org/W16-3636/))). We also explore how conclusion generation fine-tuning affects the results and how the length of the premises interacts with conclusion generation contributions.
 
 This project is a so-called "Project Module", part of the [Cognitive Systems](https://www.uni-potsdam.de/en/studium/what-to-study/master/masters-courses-from-a-to-z/cognitive-systems) Master program at the [University of Potsdam](https://www.uni-potsdam.de/en/university-of-potsdam). Contributors: [Tamara Atanasoska](https://github.com/TamaraAtanasoska), [Emanuele De Rossi](https://github.com/EmanueleDeRossi1) and [Galina Ryazanskaya](https://github.com/flying-bear).
 
@@ -191,7 +191,8 @@ It is necessay to initialise the entity and project name: [example](https://gith
 
 The code for the fine tuning can found in [conclusion_generation/fine_tuning](conclusion_generation/fine_tuning). It is based almost fully on [this](https://colab.research.google.com/github/abhimishra91/transformers-tutorials/blob/master/transformers_summarization_wandb.ipynb#scrollTo=OKRpFvYhBauC) notebook, with some changes to the way the [W&B](https://wandb.ai/site) parameters are handled and cleaning up of the deprecation errors. The original notebook was listed on the [T5 Huggingface website](https://huggingface.co/docs/transformers/model_doc/t5). 
 
-To fine-tune, you just need to pass the path to the location file:
+To fine-tune, you just need to pass the path to the dataset. We used the Persuasive Essay Corpus dataset, for which you can find all details in its [respective section](#persuasive-essay-corpus). 
+
 ```
 cd conclusion_generation/fine_tuning
 python fine-tune.py --data_path <path-to-dataset>
