@@ -405,7 +405,9 @@ class AMR(object):
             attribute_list.append(attribute_dict)
         # add TOP as an attribute. The attribute value is the top node value
         if len(node_value_list) == 0: 
-            print (line)
+            # print(line)
+            # log_helper.error("Error: misparsed line", line)
+            return None
         attribute_list[0]["TOP"] = node_value_list[0]
         result_amr = AMR(node_name_list, node_value_list, relation_list, attribute_list)
         return result_amr
