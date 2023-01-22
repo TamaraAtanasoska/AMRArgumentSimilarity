@@ -68,6 +68,7 @@ def get_amr_line(input_f):
                 break
         if line.strip().startswith("#"):
             # ignore the comment line (starting with "#") in the AMR file
+            # print(line)
             continue
         else:
             has_content = True
@@ -373,6 +374,7 @@ def compute_pool(instance1, attribute1, relation1,
                 node2_index = int(instance2[j][1][len(prefix2):])
                 candidate_mapping[node1_index].add(node2_index)
                 node_pair = (node1_index, node2_index)
+                # use -1 as key in weight_dict for instance triples and attribute triples
                 # use -1 as key in weight_dict for instance triples and attribute triples
                 if node_pair in weight_dict:
                     weight_dict[node_pair][-1] += 1
@@ -945,6 +947,9 @@ def main(arguments):
             break
         amr1 = amr.AMR.parse_AMR_line(cur_amr1, arguments.do_not_mark_quotes)
         amr2 = amr.AMR.parse_AMR_line(cur_amr2, arguments.do_not_mark_quotes)
+        if not amr1 or not amr2:
+            print("Smatch score F1: NA_WRONG_AMR")
+            continue
         prefix1 = "a"
         prefix2 = "b"
         # Rename node to "a1", "a2", .etc
