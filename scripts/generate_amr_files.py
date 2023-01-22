@@ -40,13 +40,13 @@ def main():
     with open(args.out_path / 'amr.src', 'w') as f:
         for graph in source_graphs:
             f.write(graph)
-            f.write('\n')
+            f.write('\n\n')
 
     target_graphs = process_in_batches(function=stog.parse_sents, array=target_column, batch_size=args.batch_size)
     with open(args.out_path / 'amr.tgt', 'w') as f:
         for graph in target_graphs:
             f.write(graph)
-            f.write('\n')
+            f.write('\n\n')
 
 
 if __name__ == '__main__':
