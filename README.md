@@ -221,3 +221,33 @@ We looked for the best hyperparameters for the fine-tuning with a W&B sweep. Bes
 cd conclusion_generation/fine_tuning
 python fine-tune.py --data_path <path-to-dataset> --wandb_sweep
 ```
+
+# Evaluation
+Once the Amr parses of the corpira, summaries, and conclusions are generated, one ca run the s2match on them to obtain the similarity scores.
+## Combining the S2match Scores
+The scores are output as a single txt file and the follwoing script allows to combine them into a csv containing all the smatch scores.
+
+```
+python scripts/combine_scores.py --data_path_csv <path-to-corpus-csv> --data_path_smatch_standard  <path-to-s2match_scores_standard> --out_path <path-to-put-csv>
+```
+
+The <path-to-corpus-csv> should contain a csv file with the original dataset for which the smtach scores were generated. The script combines the corpus scv `df_smatch_scores.csv` with the smatch scores form the txt file. The column name used in the output csv is `standard`. 
+  Additionally, one can provide paths to other types of smatch scores:
+
+```
+python scripts/combine_scores.py --data_path_csv <path-to-corpus-csv> --data_path_smatch_standard  <path-to-s2match_scores_standard>  --data_path_smatch_struct  <path-to-s2match_scores_struct> --data_path_smatch_concept  <path-to-s2match_scores_concept> --data_path_smatch_conclusion_standard  <path-to-s2match_scores_standard> --data_path_smatch_conclusion_struct  <path-to-s2match_scores_struct> --data_path_smatch_conclusion_concept  <path-to-s2match_scores_concept> --data_path_smatch_summary_standard  <path-to-s2match_scores_standard> --data_path_smatch_summary_struct  <path-to-s2match_scores_struct> --data_path_smatch_summary_concept  <path-to-s2match_scores_concept> --out_path <path-to-put-csv>
+```
+
+The columns are then named `standard`, `structure`, `concept`, `conclusion_standard`, `conclusion_structure`, `conclusion_concept`, `summary_standard`, `summary_structure`, `summary_concept`, according to the source of the score and the weighting scheme applied.
+  
+Finally, the length of the sentences as well as their combined length is calculated for each sentence pair by default and are saved under the names `sentence_1_len`, `sentence_2_len`, `combined_len`. The text column names are assumed to be `sentence_1` and `sentence_2` by default but can be overwritten:
+  
+```
+python scripts/combine_scores.py --data_path_csv <path-to-corpus-csv> --data_path_smatch_standard  <path-to-s2match_scores_standard> --column_name1 <sentence_1_column_name>  --column_name2 <sentence_2_column_name> --out_path <path-to-put-csv>
+```
+  
+The calculation of length can be disabled with passign `F`, `False`, or `0` to `--calculate_length`:
+  
+```
+python scripts/combine_scores.py --data_path_csv <path-to-corpus-csv> --data_path_smatch_standard  <path-to-s2match_scores_standard> --calculate_length False --out_path <path-to-put-csv>
+```
