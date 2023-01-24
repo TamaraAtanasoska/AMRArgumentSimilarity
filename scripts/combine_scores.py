@@ -66,7 +66,9 @@ def main():
         df['sentence_1_len'] = df[args.column_name1].apply(len)
         df['sentence_2_len'] = df[args.column_name2].apply(len)
         df['combined_len'] = df['sentence_1_len'] + df['sentence_2_len']
-        # df['score'].value_counts(bins=3, sort=False)
+        bins = [0, 100, 200, 250, 300, 400, 500, 1000]
+        labels = ['<100', '100-200', '200-250', '250-300', '300-400', '400-500', '>500']
+        df['bin'] = pd.cut(x=df['combined_len'], bins=bins, labels=labels, include_lowest=True)
 
     df.to_csv(args.out_path / 'df_smatch_scores.csv', index=False)
 
