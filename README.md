@@ -271,4 +271,4 @@ python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-bws-
 ```
 python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-afs-corpus>/df_smatch_scores.csv --fold_size 1 --correlation_column regression_label > <path-to-afs-corpus>eval.txt
 ```
-The evaluation results, along with threshold values for each crossvalidation fold, and the correlation results are piped into the `eval.txt`.
+The evaluation results, along with threshold values for each crossvalidation fold, a weighted global threshold, and the correlation results are piped into the `eval.txt`.
