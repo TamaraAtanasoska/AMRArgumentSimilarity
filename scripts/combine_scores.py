@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from pathlib import Path
 
@@ -33,6 +34,9 @@ def main():
     arg_parser.add_argument('--data_path_smatch_summary_standard', type=lambda x: Path(x), required=False, default=None)
     arg_parser.add_argument('--data_path_smatch_summary_struct', type=lambda x: Path(x), required=False, default=None)
     arg_parser.add_argument('--data_path_smatch_summary_concept', type=lambda x: Path(x), required=False, default=None)
+    arg_parser.add_argument('--column_name1', type=str, required=False, default='sentence_1')
+    arg_parser.add_argument('--column_name2', type=str, required=False, default='sentence_2')
+    arg_parser.add_argument('--calculate_length', required=False, default=True)
     arg_parser.add_argument('--out_path', type=lambda x: Path(x))
     args = arg_parser.parse_args()
 
@@ -57,6 +61,14 @@ def main():
         add_smatch_scores(df, read_smatch_scores(args.data_path_smatch_summary_struct), 'summary_structure')
     if args.data_path_smatch_summary_concept:
         add_smatch_scores(df, read_smatch_scores(args.data_path_smatch_summary_concept), 'summary_concept')
+
+    if args.calculate_length and args.calculate_length not in ['F', 'False', '0']:
+        df['sentence_1_len'] = df[args.column_name1].apply(len)
+        df['sentence_2_len'] = df[args.column_name2].apply(len)
+        df['combined_len'] = df['sentence_1_len'] + df['sentence_2_len']
+        bins = [0, 100, 200, 250, 300, 400, 500, 1000]
+        labels = ['<100', '100-200', '200-250', '250-300', '300-400', '400-500', '>500']
+        df['bin'] = pd.cut(x=df['combined_len'], bins=bins, labels=labels, include_lowest=True)
 
     df.to_csv(args.out_path / 'df_smatch_scores.csv', index=False)
 
