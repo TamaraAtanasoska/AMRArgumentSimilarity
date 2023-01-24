@@ -85,6 +85,7 @@ def runcv(ybar, y, topics, fold_size):
 
     # average over random runs, print
     print("final score", np.mean(out1), "&", np.mean(out2), "&", np.mean(out3))
-    print('thresholds:', Counter(thresholds))
-    print()
+    threshold_counts = Counter(thresholds)
+    print('thresholds:', threshold_counts)
+    print('weighted threshold:', sum([(k * v)/sum(threshold_counts.values()) for k,v in threshold_counts.items()]))
     return np.mean(out1), np.mean(out2), np.mean(out3)
