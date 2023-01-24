@@ -18,6 +18,7 @@ def main():
     arg_parser.add_argument('--fold_size', type=int)
     arg_parser.add_argument('--mixing_value', type=float, required=False, default=0.95)
     arg_parser.add_argument('--correlation_column', type=str, required=False, default=None)
+    arg_parser.add_argument('--out_path', type=lambda x: Path(x))
     args = arg_parser.parse_args()
 
     df = pd.read_csv(args.data_path_preds_csv)
@@ -25,99 +26,35 @@ def main():
     true = df['regression_label_binary'].to_numpy()
     topics = df['topic'].to_numpy()
 
-    preds_st = df['standard'].astype(float).to_numpy()
-    preds_c = df['conclusion_concept'].astype(float).to_numpy()
-    preds_s = df['structure'].astype(float).to_numpy()
+    preds = {}
+    columns = ['standard', 'concept', 'structure',
+               'conclusion_standard', 'conclusion_concept', 'conclusion_structure',
+               'summary_standard', 'summary_concept', 'summary_structure']
+    for col in columns:
+        preds[col] = df[col].astype(float).to_numpy()
 
-    preds_co_st = df['conclusion_standard'].astype(float).to_numpy()
-    preds_co_c = df['conclusion_concept'].astype(float).to_numpy()
-    preds_co_s = df['conclusion_structure'].to_numpy()
+    preds['conclusion_standard_mixed'] = mix(preds['conclusion_standard'], preds['standard'], args.mixing_value)
+    preds['conclusion_concept_mixed'] = mix(preds['conclusion_concept'], preds['concept'], args.mixing_value)
+    preds['conclusion_structure_mixed'] = mix(preds['conclusion_structure'], preds['structure'], args.mixing_value)
 
-    preds_con_st = mix(preds_co_st, preds_st, args.mixing_value)
-    preds_con_c = mix(preds_co_c, preds_c, args.mixing_value)
-    preds_con_s = mix(preds_co_s, preds_s, args.mixing_value)
+    preds['summary_standard_mixed'] = mix(preds['summary_standard'], preds['standard'], args.mixing_value)
+    preds['summary_concept_mixed'] = mix(preds['summary_concept'], preds['concept'], args.mixing_value)
+    preds['summary_structure_mixed'] = mix(preds['summary_structure'], preds['structure'], args.mixing_value)
 
-    preds_so_st = df['summary_standard'].astype(float).to_numpy()
-    preds_so_c = df['summary_concept'].astype(float).to_numpy()
-    preds_so_s = df['summary_structure'].astype(float).to_numpy()
+    res = {}
+    for col in preds.keys():
+        res[col] = {}
+        print(f'____{col}____')
+        eval_score, _, _, threshold = crval.runcv(preds[col], true, topics, fold_size=args.fold_size)
+        res[col]['f1'] = eval_score
+        res[col]['threshold'] = threshold
+        if args.correlation_column:
+            correlation_tgt = df[args.correlation_column].astype(float).to_numpy()
+            print('__correlation__')
+            print(spearmanr(preds[col], correlation_tgt))
+            res[col]['correlation'], res[col]['correlation_p'] = spearmanr(preds[col], correlation_tgt)
 
-    preds_sum_st = mix(preds_so_st, preds_st, args.mixing_value)
-    preds_sum_c = mix(preds_so_c, preds_c, args.mixing_value)
-    preds_sum_s = mix(preds_so_s, preds_s, args.mixing_value)
-
-    print('____standard____')
-    crval.runcv(preds_st, true, topics, fold_size=args.fold_size)
-    print('____concept____')
-    crval.runcv(preds_c, true, topics, fold_size=args.fold_size)
-    print('____structure____')
-    crval.runcv(preds_s, true, topics, fold_size=args.fold_size)
-
-    print('____conclusion_standard____')
-    crval.runcv(preds_con_st, true, topics, fold_size=args.fold_size)
-    print('____conclusion_concept____')
-    crval.runcv(preds_con_c, true, topics, fold_size=args.fold_size)
-    print('____conclusion_structure____')
-    crval.runcv(preds_con_s, true, topics, fold_size=args.fold_size)
-
-    print('____conclusion_only_standard____')
-    crval.runcv(preds_co_st, true, topics, fold_size=args.fold_size)
-    print('____conclusion_only_concept____')
-    crval.runcv(preds_co_c, true, topics, fold_size=args.fold_size)
-    print('____conclusion_only_structure____')
-    crval.runcv(preds_co_s, true, topics, fold_size=args.fold_size)
-
-    print('____summary_standard____')
-    crval.runcv(preds_sum_st, true, topics, fold_size=args.fold_size)
-    print('____summary_concept____')
-    crval.runcv(preds_sum_c, true, topics, fold_size=args.fold_size)
-    print('____summary_structure____')
-    crval.runcv(preds_sum_s, true, topics, fold_size=args.fold_size)
-
-    print('____summary_only_standard____')
-    crval.runcv(preds_so_st, true, topics, fold_size=args.fold_size)
-    print('____summary_only_concept____')
-    crval.runcv(preds_so_c, true, topics, fold_size=args.fold_size)
-    print('____summary_only_structure____')
-    crval.runcv(preds_so_s, true, topics, fold_size=args.fold_size)
-
-    if args.correlation_column:
-        correlation_tgt = df[args.correlation_column].astype(float).to_numpy()
-        print('____correlations____')
-
-        print('____standard____')
-        print(spearmanr(preds_st, correlation_tgt))
-        print('____concept____')
-        print(spearmanr(preds_c, correlation_tgt))
-        print('____structure____')
-        print(spearmanr(preds_s, correlation_tgt))
-
-        print('____conclusion_standard____')
-        print(spearmanr(preds_con_st, correlation_tgt))
-        print('____conclusion_concept____')
-        print(spearmanr(preds_con_c, correlation_tgt))
-        print('____conclusion_structure____')
-        print(spearmanr(preds_con_s, correlation_tgt))
-
-        print('____conclusion_only_standard____')
-        print(spearmanr(preds_co_st, correlation_tgt))
-        print('____conclusion_only_concept____')
-        print(spearmanr(preds_co_c, correlation_tgt))
-        print('____conclusion_only_structure____')
-        print(spearmanr(preds_co_s, correlation_tgt))
-
-        print('____summary_standard____')
-        print(spearmanr(preds_sum_st, correlation_tgt))
-        print('____summary_concept____')
-        print(spearmanr(preds_sum_c, correlation_tgt))
-        print('____summary_structure____')
-        print(spearmanr(preds_sum_s, correlation_tgt))
-
-        print('____summary_only_standard____')
-        print(spearmanr(preds_so_st, correlation_tgt))
-        print('____summary_only_concept____')
-        print(spearmanr(preds_so_c, correlation_tgt))
-        print('____summary_only_structure____')
-        print(spearmanr(preds_so_s, correlation_tgt))
+    pd.DataFrame(res).transpose().to_csv(args.out_path / 'results.csv')
 
 
 if __name__ == '__main__':
