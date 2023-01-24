@@ -224,6 +224,7 @@ python fine-tune.py --data_path <path-to-dataset> --wandb_sweep
 
 # Evaluation
 Once the Amr parses of the corpira, summaries, and conclusions are generated, one ca run the s2match on them to obtain the similarity scores.
+
 ## Combining the S2match Scores
 The scores are output as a single txt file and the follwoing script allows to combine them into a csv containing all the smatch scores.
 
@@ -251,3 +252,23 @@ The calculation of length can be disabled with passign `F`, `False`, or `0` to `
 ```
 python scripts/combine_scores.py --data_path_csv <path-to-corpus-csv> --data_path_smatch_standard  <path-to-s2match_scores_standard> --calculate_length False --out_path <path-to-put-csv>
 ```
+
+## Threshold Crossvalidation
+To find a threshold for the similarity values predicting the binary labels, we developed an adaptation of [the original script](https://github.com/TamaraAtanasoska/AMR_ArgumentSimilarity/blob/main/repro_repos/amr-argument-sim/scripts/crval.py) that could be applied to arbitrary datasets. We also slightly modified it to speed up the crossvalidation process.
+  
+The script assumes a csv with the columns `standard`, `structure`, `concept`, `conclusion_standard`, `conclusion_structure`, `conclusion_concept`, `summary_standard`, `summary_structure`, `summary_concept`.
+  
+```
+python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-upk-corpus>/df_smatch_scores.csv --fold_size 7 --mixing_value 0.95 > <path-to-upk-corpus>/eval.txt
+```
+The `--mixing_value` controls the weight given to the propositon vs the conclusion / summary. The default values is `0.95`, so the argument can be omitted. The crossvalidation is preformed by topic, and `--fold_size` must divide the total number of topics.
+
+Additionally, if the argument `--correlation_column` is provided, spearman's correlation coefficient with the column under this name is performed:
+
+```
+python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-bws-corpus>/df_smatch_scores.csv --fold_size 2 --correlation_column regression_label > <path-to-bws-corpus>/eval.txt
+```
+```
+python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-afs-corpus>/df_smatch_scores.csv --fold_size 1 --correlation_column regression_label > <path-to-afs-corpus>eval.txt
+```
+The evaluation results, along with threshold values for each crossvalidation fold, and the correlation results are piped into the `eval.txt`.
