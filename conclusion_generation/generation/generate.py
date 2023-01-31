@@ -59,7 +59,7 @@ def main():
     df_1 = df["sentence_1"]
     df_2 = df["sentence_2"]
     df_1.sentence = "summarize: " + df.sentence_1
-    df_2.sentence = "summarise: " + df.sentence_2
+    df_2.sentence = "summarize: " + df.sentence_2
 
     model = T5ForConditionalGeneration.from_pretrained("t5-base")
     model = model.to(device)
