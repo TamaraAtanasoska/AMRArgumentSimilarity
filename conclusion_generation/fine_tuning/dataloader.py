@@ -20,8 +20,7 @@ class CustomDataset(Dataset):
         claim = " ".join(claim.split())
 
         premises = str(self.premises[index])
-        premises = premises.replace(" ### ", " ")
-        premises = " ".join(premises.split())
+        premises = premises.replace(" ### ", ".")
 
         source = self.tokenizer.batch_encode_plus(
             [claim],
