@@ -67,15 +67,6 @@ cd repro_repos/amr-metric-suite/py3-Smatch-and-S2match
 python smatch/s2match.py -f ../examples/a.txt ../examples/b.txt -cutoff 0.95 -weighting_scheme structure --ms
 ```
 
-### Evaluating with the AMR Metric
-
-In the [```sim_preds/```](repro_repos/amr-argument-sim/scripts/sim_preds) folder, there are various predictions stored. To test-evaluate all of them with the AMR metric you can run the command below. You will see the output as the command runs.  
-```
-cd repro_repos/amr-argument-sim/scripts/
-./evaluate_all.sh
-```
-What the script does, is use all the files that are in the similarity predictions folder to evaluate. If you would like to use a file of your own, you can use the [```evaluate.py```](repro_repos/amr-argument-sim/scripts/evaluate.py) script. 
-
 ## Using the AMR Parser
 
 If you have set up your environment with [our section](#environment-recreation) about it above, you will already have all the packages installed. If you haven't and you would like to install only the relevant ones for this parser, please take a look at the parser's [installation guide](https://amrlib.readthedocs.io/en/latest/install/). If you only need the parser, it is a better idea to clone the code from the [original repository](https://github.com/bjascob/amrlib) too. 
@@ -269,7 +260,7 @@ Additionally, if the argument `--correlation_column` is provided, spearman's cor
 python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-bws-corpus>/df_smatch_scores.csv --fold_size 2 --correlation_column regression_label --out_path <path-to-bws-corpus> > <path-to-bws-corpus>/eval.txt
 ```
 ```
-python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-afs-corpus>/df_smatch_scores.csv --fold_size 1 --correlation_column regression_label --out_path <path-to-afs-corpus> > <path-to-afs-corpus>eval.txt
+python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-afs-corpus>/df_smatch_scores.csv --fold_size 1 --correlation_column regression_label --out_path <path-to-afs-corpus> > <path-to-afs-corpus>/eval.txt
 ```
 The results are written to the `--out_path` / `results.csv` and contain the columns `f1`, `threshold`, and also `correlation`, `correlation_p` if the argument `--correlation_column` is given. The `threshold` is a weighted average of the fold thresholds.
 The verbose version of the evaluation results, along with threshold values for each crossvalidation fold, a weighted threshold, and the correlation results are piped into the `eval.txt`.
