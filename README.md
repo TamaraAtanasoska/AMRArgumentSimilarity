@@ -135,7 +135,7 @@ The premises-claim pairs are created as follows:
 To test the metric on the [UKP Aspect dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/1998) a renaming scheme needs to be applied to obtain binary scores in accordance with the original article.
 
 ```
-python scripts/rescale_upk_dataset.py --upk_path <path-to-ukp-corpus-tsv> --out_file <out-path>/UKP_corpus.csv
+python scripts/rescale_ukp_dataset.py --ukp_path <path-to-ukp-corpus-tsv> --out_file <out-path>/UKP_corpus.csv
 ```
 
 The `<path-to-ukp-corpus-tsv>` should be the UKP argument similarity tsv file distributed from the corpus official website. 

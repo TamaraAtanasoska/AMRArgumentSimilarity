@@ -13,7 +13,7 @@ def read_UPK_data(path, sep='\t'):
 
 def main():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--upk_path', type=lambda x: Path(x))
+    arg_parser.add_argument('--ukp_path', type=lambda x: Path(x))
     arg_parser.add_argument('--out_file', type=lambda x: Path(x))
     arg_parser.add_argument('--input_type', type=str, default='tsv')  # tsv or csv
     args = arg_parser.parse_args()
