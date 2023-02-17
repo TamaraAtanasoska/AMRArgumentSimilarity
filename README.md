@@ -131,16 +131,16 @@ The premises-claim pairs are created as follows:
 2. All premises supproting a claim are concatenated in the same way and paired with the claim, e.g `essay0, claim1 ### claim2 ### claim3, claim4`
 3. All premises supproting a premise are concatenated in the same way and paird with the premies, e.g `essay0, premise1 ### premise2 ### premise3, premise4`
 
-### UPK Dataset
-To test the metric on the [UPK Aspect dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/1998) a renaming scheme needs to be applied to obtain binary scores in accordance with the original article.
+### UKP Dataset
+To test the metric on the [UKP Aspect dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/1998) a renaming scheme needs to be applied to obtain binary scores in accordance with the original article.
 
 ```
-python scripts/rescale_upk_dataset.py --upk_path <path-to-upk-corpus-tsv> --out_file <out-path>/UPK_corpus.csv
+python scripts/rescale_upk_dataset.py --upk_path <path-to-ukp-corpus-tsv> --out_file <out-path>/UKP_corpus.csv
 ```
 
-The `<path-to-upk-corpus-tsv>` should be the UPK argument similarity tsv file distributed from the corpus official website. 
+The `<path-to-ukp-corpus-tsv>` should be the UKP argument similarity tsv file distributed from the corpus official website. 
 
-The resulting CSV file is written to `<out-path>/UPK_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`. The sentence and topic columns are copied form the original dataset; the binary label is 1 if the original label is above 'HS' or 'SS' (*highly similar* or *somewhat similar*) and 0 otherwie. No scale of `regression_label` is available for this dataset, only binary scores.
+The resulting CSV file is written to `<out-path>/UKP_corpus.csv` and contains the following columns: `topic`, `sentence_1`, `sentence_2`, `regression_label_binary`. The sentence and topic columns are copied form the original dataset; the binary label is 1 if the original label is above 'HS' or 'SS' (*highly similar* or *somewhat similar*) and 0 otherwie. No scale of `regression_label` is available for this dataset, only binary scores.
 
 ### BWS Dataset
 To test the metric on the [BWS dataset](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/2496) a rescaling scheme needs to be applied to obtain binary scores.
@@ -250,7 +250,7 @@ To find a threshold for the similarity values predicting the binary labels, we d
 The script assumes a csv with the columns `standard`, `structure`, `concept`, `conclusion_standard`, `conclusion_structure`, `conclusion_concept`, `summary_standard`, `summary_structure`, `summary_concept`.
   
 ```
-python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-upk-corpus>/df_smatch_scores.csv --fold_size 7 --mixing_value 0.95 --out_path <path-to-upk-corpus> > <path-to-upk-corpus>/eval.txt
+python scripts/evaluate/evaluate_dataset.py  --data_path_preds_csv <path-to-ukp-corpus>/df_smatch_scores.csv --fold_size 7 --mixing_value 0.95 --out_path <path-to-ukp-corpus> > <path-to-ukp-corpus>/eval.txt
 ```
 The `--mixing_value` controls the weight given to the propositon vs the conclusion / summary. The default values is `0.95`, so the argument can be omitted. The crossvalidation is preformed by topic, and `--fold_size` must divide the total number of topics.
 
